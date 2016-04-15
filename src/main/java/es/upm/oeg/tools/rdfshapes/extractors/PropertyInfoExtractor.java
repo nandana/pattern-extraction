@@ -1,10 +1,13 @@
-package es.upm.oeg.tools.rdfshapes;
+package es.upm.oeg.tools.rdfshapes.extractors;
 
 import com.google.common.collect.Sets;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+import es.upm.oeg.tools.rdfshapes.ClassMatrixGenerator;
+import es.upm.oeg.tools.rdfshapes.Count;
+import es.upm.oeg.tools.rdfshapes.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
@@ -41,16 +44,18 @@ import static es.upm.oeg.tools.rdfshapes.utils.RDFTermUtils.getPrefixedTerm;
  * @author Nandana Mihindukulasooriya
  * @since 1.0.0
  */
-public class PropertyDomainExtractor {
+public class PropertyInfoExtractor {
 
-    private static final Logger logger = LoggerFactory.getLogger(PropertyDomainExtractor.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropertyInfoExtractor.class);
 
-    private static final String QUERY2_PATH = "src/main/resources/countIndividualsWithProperty.rq";
-    private static final String QUERY_PATH = "src/main/resources/propertyDomain.rq";
-    private static final String QUERY5_PATH = "src/main/resources/propertyDomainList.rq";
-    private static final String QUERY3_PATH = "src/main/resources/propertyList.rq";
-    private static final String QUERY4_PATH = "src/main/resources/propertyURIObjectList.rq";
-    private static final String QUERY6_PATH = "src/main/resources/isTypeOf.rq";
+    private static final String QUERY2_PATH = "src/main/resources/query/countIndividualsWithProperty.rq";
+    private static final String QUERY_PATH = "src/main/resources/query/propertyDomain.rq";
+    private static final String QUERY5_PATH = "src/main/resources/query/propertyDomainList.rq";
+    private static final String QUERY3_PATH = "src/main/resources/query/propertyListOfClass.rq";
+    private static final String QUERY4_PATH = "src/main/resources/query/propertyURIObjectList.rq";
+    private static final String QUERY6_PATH = "src/main/resources/query/isTypeOf.rq";
+    private static final String QUERY7_PATH = "src/main/resources/query/propertyList.rq";
+    private static final String QUERY8_PATH = "src/main/resources/query/propertyDistinctSubjectCount.rq";
 
     private static final String DOMAIN_CLASS_VAR = "domainClass";
     public static final String COUNT_VAR = "count";
@@ -61,16 +66,11 @@ public class PropertyDomainExtractor {
     private static String propertyDomainQueryString;
     private static String propertyDomainListQueryString;
     private static String individualCountQueryString;
+    private static String propertyListofClassQueryString;
     private static String propertyListQueryString;
     private static String propertyObjectsQueryString;
     private static String isTypeOfQueryString;
-
-
-    private String sparqlEndpoint;
-
-    public PropertyDomainExtractor(String sparqlEndpoint) {
-        this.sparqlEndpoint = sparqlEndpoint;
-    }
+    private static String propertyDistinctSubjectCountQueryString;
 
 
     static {
@@ -78,21 +78,62 @@ public class PropertyDomainExtractor {
             propertyDomainQueryString = readFile(QUERY_PATH, Charset.defaultCharset());
             propertyDomainListQueryString = readFile(QUERY5_PATH, Charset.defaultCharset());
             individualCountQueryString = readFile(QUERY2_PATH, Charset.defaultCharset());
-            propertyListQueryString = readFile(QUERY3_PATH, Charset.defaultCharset());
+            propertyListofClassQueryString = readFile(QUERY3_PATH, Charset.defaultCharset());
+            propertyListQueryString = readFile(QUERY7_PATH, Charset.defaultCharset());
             propertyObjectsQueryString = readFile(QUERY4_PATH, Charset.defaultCharset());
             isTypeOfQueryString = readFile(QUERY6_PATH, Charset.defaultCharset());
+            propertyDistinctSubjectCountQueryString = readFile(QUERY8_PATH, Charset.defaultCharset());
         } catch (IOException ioe) {
             throw new IllegalStateException("Error loading the query :" + QUERY_PATH);
         }
     }
 
+    public static long getPropertyDistinctSubjectCount(String property, String sparqlEndpoint) {
 
-    private ArrayList<Count> extractPropertiesOfClass(String clazz) {
+        ParameterizedSparqlString pss = new ParameterizedSparqlString();
+        pss.setCommandText(propertyDistinctSubjectCountQueryString);
+        pss.setIri(PROPERTY_VAR, property);
+        String propertyDistinctSubjectCountQuery = pss.toString();
+
+        return executeQueryForLong(propertyDistinctSubjectCountQuery, sparqlEndpoint, COUNT_VAR);
+
+    }
+
+
+
+    public static ArrayList<Count> extractProperties(String sparqlEndpoint) {
 
         ArrayList<Count> properties = new ArrayList<>();
 
         ParameterizedSparqlString pss = new ParameterizedSparqlString();
         pss.setCommandText(propertyListQueryString);
+        String propertyDomainQuery = pss.toString();
+
+        List<Map<String, RDFNode>> resultsMap = executeQueryForList(propertyDomainQuery, sparqlEndpoint,
+                Sets.newHashSet(PROPERTY_VAR, COUNT_VAR));
+
+        for (Map<String, RDFNode> map : resultsMap) {
+            RDFNode propertyNode = map.get(PROPERTY_VAR);
+            RDFNode countNode = map.get(COUNT_VAR);
+
+            if (propertyNode != null && countNode != null
+                    && propertyNode.isURIResource() && countNode.isLiteral()) {
+                String domainClass = propertyNode.asResource().getURI();
+                long count = countNode.asLiteral().getLong();
+                properties.add(new Count(domainClass, count));
+            }
+        }
+
+        return properties;
+    }
+
+
+    public static ArrayList<Count> extractPropertiesOfClass(String clazz, String sparqlEndpoint) {
+
+        ArrayList<Count> properties = new ArrayList<>();
+
+        ParameterizedSparqlString pss = new ParameterizedSparqlString();
+        pss.setCommandText(propertyListofClassQueryString);
         pss.setIri(CLASS_VAR, clazz);
         String propertyDomainQuery = pss.toString();
 
@@ -114,13 +155,12 @@ public class PropertyDomainExtractor {
         return properties;
     }
 
-    public ArrayList<Count> extractDomainClasses(String clazz, String property) {
+    public static ArrayList<Count> extractDomainClasses(String property, String sparqlEndpoint) {
 
         ArrayList<Count> domainClasses = new ArrayList<>();
 
         ParameterizedSparqlString pss = new ParameterizedSparqlString();
         pss.setCommandText(propertyDomainQueryString);
-        pss.setIri(CLASS_VAR, clazz);
         pss.setIri(PROPERTY_VAR,property);
         String propertyDomainQuery = pss.toString();
 
@@ -142,7 +182,31 @@ public class PropertyDomainExtractor {
         return domainClasses;
     }
 
-    public ArrayList<String> extractDomainClassesList(String clazz, String property) {
+    public static ArrayList<String> extractDomainClassesList(String property, String sparqlEndpoint) {
+
+        ArrayList<String> domainClasses = new ArrayList<>();
+
+        ParameterizedSparqlString pss = new ParameterizedSparqlString();
+        pss.setCommandText(propertyDomainListQueryString);
+        pss.setIri(PROPERTY_VAR,property);
+        String propertyDomainQuery = pss.toString();
+
+        List<Map<String, RDFNode>> resultsMap = executeQueryForList(propertyDomainQuery, sparqlEndpoint,
+                Sets.newHashSet(DOMAIN_CLASS_VAR));
+
+        for (Map<String, RDFNode> map : resultsMap) {
+            RDFNode domainClassNode = map.get(DOMAIN_CLASS_VAR);
+
+            if (domainClassNode != null && domainClassNode.isURIResource()) {
+                String domainClass = domainClassNode.asResource().getURI();
+                domainClasses.add(domainClass);
+            }
+        }
+
+        return domainClasses;
+    }
+
+    public static ArrayList<String> extractRangeClassList(String clazz, String property, String sparqlEndpoint) {
 
         ArrayList<String> domainClasses = new ArrayList<>();
 
@@ -167,7 +231,7 @@ public class PropertyDomainExtractor {
         return domainClasses;
     }
 
-    public ArrayList<Count> extractPropertyObjects(String clazz, String property) {
+    public static ArrayList<Count> extractPropertyObjects(String clazz, String property, String sparqlEndpoint) {
 
         ArrayList<Count> objectURIs = new ArrayList<>();
 
@@ -197,7 +261,7 @@ public class PropertyDomainExtractor {
         return objectURIs;
     }
 
-    public boolean isTypeOf(String individual, String clazz) {
+    public static boolean isTypeOf(String individual, String clazz, String sparqlEndpoint) {
 
         ParameterizedSparqlString pss = new ParameterizedSparqlString();
         pss.setCommandText(isTypeOfQueryString);
@@ -214,7 +278,7 @@ public class PropertyDomainExtractor {
     }
 
 
-    private long extractIndividualWithPropertyCount(String clazz, String property) {
+    private static long extractIndividualWithPropertyCount(String clazz, String property, String sparqlEndpoint) {
 
         ParameterizedSparqlString pss = new ParameterizedSparqlString();
         pss.setCommandText(individualCountQueryString);
@@ -240,7 +304,7 @@ public class PropertyDomainExtractor {
         String lovEndpoint = "http://lov.okfn.org/dataset/lov/sparql";
         String dBpediaService = "http://dbpedia.org/sparql";
 
-        PropertyDomainExtractor domainExtractor = new PropertyDomainExtractor(sparqlService);
+        PropertyInfoExtractor domainExtractor = new PropertyInfoExtractor();
 
         //ArrayList<Count> properties = domainExtractor.extractPropertiesOfClass(clazz);
         ArrayList<Count> properties = new ArrayList<>();
@@ -262,11 +326,11 @@ public class PropertyDomainExtractor {
             System.out.println(String.format("Class: %s , Property: %s ", clazz, property));
             System.out.println();
 
-            long individualCount = domainExtractor.extractIndividualWithPropertyCount(clazz, property);
+            long individualCount = domainExtractor.extractIndividualWithPropertyCount(clazz, property, sparqlService);
             System.out.println(String.format("Individuals of class '%s' with property '%s' : %d", clazz, property, individualCount));
             System.out.println();
 
-            List<Count> domainCount = domainExtractor.extractDomainClasses(clazz, property);
+            List<Count> domainCount = domainExtractor.extractDomainClasses(property, sparqlService);
 
             if (domainCount.size() == 0) {
                 continue;

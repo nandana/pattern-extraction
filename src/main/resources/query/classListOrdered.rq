@@ -1,0 +1,4 @@
+select ?class (count (distinct ?s) as ?count) where {
+ ?s a ?class .
+} group by ?class
+order by desc(?count)

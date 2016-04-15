@@ -82,6 +82,7 @@ public class RDFTermUtils {
         nsMap.put("http://geovocab.org/geometry#", "geometry");
         nsMap.put("http://vocab.org/transit/terms/", "transit");
         nsMap.put("http://3cixty.com/ontology#", "3cixty");
+        nsMap.put("http://transport.data.gov.uk/def/naptan/", "naptan");
 
     }
 

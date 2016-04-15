@@ -1,5 +1,6 @@
 package es.upm.oeg.tools.rdfshapes;
 
+import es.upm.oeg.tools.rdfshapes.extractors.PropertyInfoExtractor;
 import es.upm.oeg.tools.rdfshapes.utils.RDFTermUtils;
 import org.elasticsearch.common.base.Joiner;
 import org.slf4j.Logger;
@@ -45,7 +46,7 @@ public class AruleInputGenerator {
                         StandardOpenOption.CREATE);
 
         String sparqlService = "http://es.dbpedia.org/sparql";
-        PropertyDomainExtractor domainExtractor = new PropertyDomainExtractor(sparqlService);
+        PropertyInfoExtractor domainExtractor = new PropertyInfoExtractor();
 
         String clazz = "http://dbpedia.org/ontology/SoccerPlayer";
         String property = "http://dbpedia.org/ontology/country";
@@ -53,7 +54,7 @@ public class AruleInputGenerator {
         List<String> domainList = domainExtractor.extractDomainClassesList(clazz, property);
         domainList.remove("http://www.w3.org/2002/07/owl#Thing");
 
-        List<Count> objectCount = domainExtractor.extractPropertyObjects(clazz, property);
+        List<Count> objectCount = domainExtractor.extractPropertyObjects(clazz, property, sparqlService);
 
         List<String> prefixedDomainList = new ArrayList<>();
         for (String domainClass : domainList) {
@@ -74,7 +75,7 @@ public class AruleInputGenerator {
             writer.write(""+ i++);
             for (String domainClass : domainList) {
                 writer.write(",");
-                if (domainExtractor.isTypeOf(object.getSubject(), domainClass))  {
+                if (domainExtractor.isTypeOf(object.getSubject(), domainClass, sparqlService))  {
                     writer.write("1");
                 } else  {
                     writer.write("0");
