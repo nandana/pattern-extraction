@@ -1,0 +1,6 @@
+select distinct ?p
+where
+{
+ ?s a ?class;
+    ?p  ?o .
+}
