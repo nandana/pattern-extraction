@@ -1,0 +1,6 @@
+select ?domainClass (count (distinct ?s) as ?count) where {
+ ?s a ?class ;
+    ?property ?o .
+ ?o a ?domainClass .
+} group by ?domainClass
+order by desc(?count)

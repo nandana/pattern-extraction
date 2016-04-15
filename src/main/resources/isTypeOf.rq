@@ -1,0 +1,3 @@
+ask {
+   ?individual a ?class
+}

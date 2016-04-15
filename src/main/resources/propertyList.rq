@@ -1,0 +1,5 @@
+select ?property (count (distinct ?s) as ?count) where {
+ ?s a ?class ;
+    ?property ?o .
+} group by ?property
+order by desc(?count)

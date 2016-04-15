@@ -1,0 +1,6 @@
+select ?object (count (distinct ?s) as ?count)  where {
+ ?s a ?class ;
+    ?property ?object .
+ ?object a ?anyClass .
+} group by ?object
+order by desc(?count)

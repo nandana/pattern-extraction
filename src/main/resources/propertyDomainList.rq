@@ -1,0 +1,5 @@
+select distinct ?domainClass where {
+ ?s a ?class ;
+    ?property ?o .
+ ?o a ?domainClass .
+}
