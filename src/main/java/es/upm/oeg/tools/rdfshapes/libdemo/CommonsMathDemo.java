@@ -1,4 +1,4 @@
-package es.upm.oeg.tools.rdfshapes.stats;
+package es.upm.oeg.tools.rdfshapes.libdemo;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 

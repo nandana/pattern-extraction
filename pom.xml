@@ -77,6 +77,21 @@
       <artifactId>commons-math3</artifactId>
       <version>3.6.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+      <version>3.14</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>3.14</version>
+    </dependency>
+    <dependency>
+      <groupId>org.aksw.rdfunit</groupId>
+      <artifactId>rdfunit-core</artifactId>
+      <version>0.7.20</version>
+    </dependency>
     <!--<dependency>-->
       <!--<groupId>eu.trentorise.opendata</groupId>-->
       <!--<artifactId>jackan</artifactId>-->
@@ -94,6 +109,14 @@
             <target>1.7</target>
         </configuration>
     </plugin>
-</plugins>
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-compiler-plugin</artifactId>
+         <configuration>
+           <source>1.8</source>
+           <target>1.8</target>
+         </configuration>
+       </plugin>
+     </plugins>
 	</build>
 </project>

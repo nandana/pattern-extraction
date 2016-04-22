@@ -1,9 +1,7 @@
-package es.upm.oeg.tools.rdfshapes.semsimilarity;
+package es.upm.oeg.tools.rdfshapes.libdemo;
 
-import org.languagetool.AnalyzedSentence;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.BritishEnglish;
-import org.languagetool.language.English;
 import org.languagetool.rules.RuleMatch;
 
 import java.util.List;

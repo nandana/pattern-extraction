@@ -16,17 +16,17 @@ import java.util.List;
 
 public class ClassListExtractor extends QueryBase {
 
-    private static String allClassesQueryPath = "src/main/resources/all-classes-ordered.sparql";
+    private static String allClassesQueryPath = "src/main/resources/common/all-classes-ordered.sparql";
 
     public static void main(String[] args) throws Exception {
 
 
-        Path path = FileSystems.getDefault().getPath("src/main/resources/3cixty/classlist.txt");
+        Path path = FileSystems.getDefault().getPath("src/main/resources/bne/classlist.txt");
         BufferedWriter writer =
                 Files.newBufferedWriter( path, Charset.defaultCharset(),
                         StandardOpenOption.CREATE);
 
-        String endpoint = "http://3cixty.eurecom.fr/sparql";
+        String endpoint = "http://infra2.dia.fi.upm.es:8899/sparql";
 
         String allClassesQuery = readFile(allClassesQueryPath, Charset.defaultCharset());
 

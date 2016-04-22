@@ -1,4 +1,4 @@
-package es.upm.oeg.tools.rdfshapes.semsimilarity;
+package es.upm.oeg.tools.rdfshapes.libdemo;
 
 import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;

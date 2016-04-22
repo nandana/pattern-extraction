@@ -1,0 +1,5 @@
+select (count(distinct ?o) as ?c) where {
+    ?s a ?class;
+       ?p ?o .
+    FILTER isIRI(?o)
+}

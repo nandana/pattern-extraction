@@ -1,6 +1,5 @@
-package es.upm.oeg.tools.rdfshapes.semsimilarity;
+package es.upm.oeg.tools.rdfshapes.libdemo;
 
-import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Synset;

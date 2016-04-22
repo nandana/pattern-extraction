@@ -1,4 +1,4 @@
-package es.upm.oeg.tools.rdfshapes;
+package es.upm.oeg.tools.rdfshapes.libdemo;
 
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;

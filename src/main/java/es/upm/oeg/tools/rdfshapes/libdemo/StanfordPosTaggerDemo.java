@@ -1,4 +1,4 @@
-package es.upm.oeg.tools.rdfshapes.semsimilarity;
+package es.upm.oeg.tools.rdfshapes.libdemo;
 
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;

@@ -118,4 +118,20 @@ public class RDFTermUtils {
 
     }
 
+    public static String getNs(String uri){
+
+        int i = uri.lastIndexOf('#');
+        if (i == -1) {
+            i = uri.lastIndexOf('/');
+        }
+        if (i == -1) {
+            //TODO handle other URIs, do we really have to?
+            throw new IllegalStateException("Unable to extract local name from '"+ uri + "'");
+        }
+
+        return uri.substring(0, i+1);
+
+    }
+
+
 }
