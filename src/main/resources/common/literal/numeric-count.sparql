@@ -1,0 +1,5 @@
+select (count (*) as ?c) where {
+ ?s a ?class ;
+    ?property ?o .
+ FILTER (isLiteral(?o) AND isNumeric(?o))
+}

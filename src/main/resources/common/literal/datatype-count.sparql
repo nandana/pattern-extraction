@@ -1,0 +1,8 @@
+PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+select ?datatype (count (distinct ?o) as ?c) where {
+ ?s a ?class ;
+    ?property ?o .
+ filter isLiteral(?o)
+ bind (datatype(?o) as ?datatype)
+} group by ?datatype

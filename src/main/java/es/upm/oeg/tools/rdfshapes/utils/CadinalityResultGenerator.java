@@ -1,11 +1,11 @@
 package es.upm.oeg.tools.rdfshapes.utils;
 
 import com.google.common.collect.ImmutableMap;
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntModelSpec;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.google.common.collect.ImmutableSet;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import es.upm.oeg.tools.rdfshapes.extractors.QueryBase;
+import es.upm.oeg.tools.rdfshapes.stats.CardinalityCount;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -17,9 +17,8 @@ import java.io.FileOutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.util.*;
 
 /**
  * Copyright 2014-2016 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
@@ -39,22 +38,16 @@ import java.util.Map;
  * @author Nandana Mihindukulasooriya
  * @since 1.0.0
  */
-public class CardinalityTemplateGenerator extends QueryBase {
+public class CadinalityResultGenerator extends QueryBase {
 
     private static String classPropertyQueryPath = "src/main/resources/3cixty/class-properties.sparql";
     private static String propertyCardinalityQueryPath = "src/main/resources/3cixty/cardinality.sparql";
-    private static String individualCountQueryPath = "src/main/resources/3cixty/instance-count.sparql";
-    private static String classListPath = "src/main/resources/bne/classlist.txt";
+    private static String individualCountQueryPath = "src/main/resources/common/instance-count.sparql";
+    private static String classListPath = "src/main/resources/3cixty/classlist.txt";
 
     public static void main(String[] args) throws Exception {
 
-
-        OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM_RULE_INF, ModelFactory.createDefaultModel());
-        model.read("http://dublincore.org/2012/06/14/dcelements.ttl");
-
-
-
-        String endpoint = "http://infra2.dia.fi.upm.es:8899/sparql";
+        String endpoint = "http://3cixty.eurecom.fr/sparql";
 
         List<String> classList = Files.
                 readAllLines(Paths.get(classListPath),
@@ -63,6 +56,8 @@ public class CardinalityTemplateGenerator extends QueryBase {
         String classPropertyQueryString = readFile(classPropertyQueryPath, Charset.defaultCharset());
         String propertyCardinalityQueryString = readFile(propertyCardinalityQueryPath, Charset.defaultCharset());
         String individualCountQueryString = readFile(individualCountQueryPath, Charset.defaultCharset());
+
+        DecimalFormat df = new DecimalFormat("0.0000");
 
 
         //Create the Excel workbook and sheet
@@ -110,10 +105,11 @@ public class CardinalityTemplateGenerator extends QueryBase {
             for (RDFNode property : nodeList) {
                 if (property.isURIResource()) {
 
+                    DescriptiveStatistics stats = new DescriptiveStatistics();
+
                     String propertyURI = property.asResource().getURI();
 //                    System.out.println("* " + propertyURI);
 //                    System.out.println();
-
 
                     XSSFRow propertyRow = sheet.getRow(currentExcelRow);
                     if (propertyRow == null) {
@@ -123,6 +119,75 @@ public class CardinalityTemplateGenerator extends QueryBase {
 
                     XSSFCell propertyCell = propertyRow.createCell(1);
                     propertyCell.setCellValue(propertyURI);
+
+                    Map<String, String> litMap2 = new HashMap<>();
+                    Map<String, String> iriMap2 = ImmutableMap.of("class", clazz, "p", propertyURI);
+
+                    queryString = bindQueryString(propertyCardinalityQueryString, ImmutableMap.of(IRI_BINDINGS, iriMap2, LITERAL_BINDINGS, litMap2));
+
+                    List<Map<String, RDFNode>> solnMaps = executeQueryForList(queryString, endpoint, ImmutableSet.of("card", "count"));
+
+                    int sum = 0;
+                    List<CardinalityCount> cardinalityList = new ArrayList<>();
+                    if (solnMaps.size() > 0) {
+
+                        for (Map<String, RDFNode> soln : solnMaps) {
+                            int count = soln.get("count").asLiteral().getInt();
+                            int card = soln.get("card").asLiteral().getInt();
+
+                            for (int i = 0 ; i < count; i++) {
+                                stats.addValue(card);
+                            }
+
+                            CardinalityCount cardinalityCount = new CardinalityCount(card, count, (((double)count) / individualCount) * 100);
+                            cardinalityList.add(cardinalityCount);
+                            sum += count;
+                        }
+
+                        // Check for zero cardinality instances
+                        int count = individualCount - sum;
+                        if (count > 0) {
+                            for (int i = 0; i < count; i++) {
+                                stats.addValue(0);
+                            }
+                            CardinalityCount cardinalityCount = new CardinalityCount(0, count, (((double)count) / individualCount) * 100);
+                            cardinalityList.add(cardinalityCount);
+                        }
+                    }
+
+                    Map<Integer, Double> cardMap = new HashMap<>();
+                    for (CardinalityCount count : cardinalityList) {
+                            cardMap.put(count.getCardinality(), count.getPrecentage());
+                    }
+
+
+                    XSSFCell instanceCountCell = propertyRow.createCell(2);
+                    instanceCountCell.setCellValue(individualCount);
+
+                    XSSFCell minCell = propertyRow.createCell(3);
+                    minCell.setCellValue(stats.getMin());
+
+                    XSSFCell maxCell = propertyRow.createCell(4);
+                    maxCell.setCellValue(stats.getMax());
+
+                    XSSFCell p1 = propertyRow.createCell(5);
+                    p1.setCellValue(stats.getPercentile(1));
+
+                    XSSFCell p99 = propertyRow.createCell(6);
+                    p99.setCellValue(stats.getPercentile(99));
+
+                    XSSFCell mean = propertyRow.createCell(7);
+                    mean.setCellValue(df.format(stats.getMean()));
+
+                    for (int i = 0; i < 21 ; i++) {
+                        XSSFCell dataCell = propertyRow.createCell(8+i);
+                        Double percentage = cardMap.get(i);
+                        if (percentage != null) {
+                            dataCell.setCellValue(df.format(percentage));
+                        } else {
+                            dataCell.setCellValue(0);
+                        }
+                    }
 
 //                    System.out.println("| Min Card. |Max Card. |");
 //                    System.out.println("|---|---|");
@@ -141,15 +206,10 @@ public class CardinalityTemplateGenerator extends QueryBase {
 
         }
 
-        String filename = "test.xls" ;
+        String filename = "3cixty.xls" ;
         FileOutputStream fileOut = new FileOutputStream(filename);
         wb.write(fileOut);
         fileOut.close();
-
     }
-
-
-
-
 
 }

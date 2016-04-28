@@ -3,6 +3,8 @@ package es.upm.oeg.tools.rdfshapes.libdemo;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QuerySolution;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -43,6 +45,8 @@ public class RDFUnitDemo {
 
     public static void main(String[] args) throws Exception {
 
+
+        analyzeProperty("http://www.w3.org/ns/locn#geometry");
 
 
 
@@ -100,14 +104,41 @@ public class RDFUnitDemo {
 
         String queryString = PrefixNSService.getSparqlPrefixDecl() +
                 " ask { " +
-                "<" + property + ">  rdfs:range rdfs:Literal ." +
+                "<" + property + ">  ?p ?o ." +
                 "}";
 
 
+        boolean foundInLOV = false;
         try (QueryExecution qe = qef.createQueryExecution(queryString)) {
-            boolean isSubClass = qe.execAsk();
+            foundInLOV = qe.execAsk();
             //System.out.println(isSubClass);
-            System.out.println("range" + isSubClass);
+            System.out.println("Found in LOV" + foundInLOV);
+        }
+
+        queryString = PrefixNSService.getSparqlPrefixDecl() +
+                " select  ?g ?range { graph ?g { " +
+                "<" + property + ">  rdfs:range ?range ." +
+                " } }";
+
+        System.out.println(queryString);
+
+        try (QueryExecution qe = qef.createQueryExecution(queryString)) {
+
+            ResultSet resultSet = qe.execSelect();
+            while (resultSet.hasNext()) {
+                QuerySolution qs = resultSet.next();
+                Resource g = qs.get("g").asResource();
+                Resource range = qs.get("range").asResource();
+                System.out.println("Range:" + range.getURI() + "(" + g.getURI() + ")");
+            }
+
+//            qe.execSelect().forEachRemaining(qs -> {
+//                    Resource g = qs.get("g").asResource();
+//                    Resource range = qs.get("range").asResource();
+//                    System.out.println("Range:" + range.getURI() + "(" + g.getURI() + ")");
+//                });
+
+
         }
 
         queryString = PrefixNSService.getSparqlPrefixDecl() +
