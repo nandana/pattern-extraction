@@ -67,11 +67,11 @@
       <artifactId>language-en</artifactId>
       <version>3.3</version>
     </dependency>
-    <dependency>
+<!--    <dependency>
       <groupId>edu.stanford.nlp</groupId>
       <artifactId>stanford-postagger</artifactId>
       <version>3.6.0</version>
-    </dependency>
+    </dependency>-->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-math3</artifactId>

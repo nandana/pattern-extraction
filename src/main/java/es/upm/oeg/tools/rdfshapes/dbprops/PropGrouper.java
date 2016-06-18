@@ -1,23 +1,23 @@
 package es.upm.oeg.tools.rdfshapes.dbprops;
 
-import edu.stanford.nlp.ling.HasWord;
-import edu.stanford.nlp.ling.TaggedWord;
-import edu.stanford.nlp.tagger.maxent.MaxentTagger;
-import org.elasticsearch.common.base.Joiner;
-import org.languagetool.JLanguageTool;
-import org.languagetool.language.BritishEnglish;
-import org.languagetool.rules.RuleMatch;
-
-import java.io.BufferedWriter;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+//import edu.stanford.nlp.ling.HasWord;
+//import edu.stanford.nlp.ling.TaggedWord;
+//import edu.stanford.nlp.tagger.maxent.MaxentTagger;
+//import org.elasticsearch.common.base.Joiner;
+//import org.languagetool.JLanguageTool;
+//import org.languagetool.language.BritishEnglish;
+//import org.languagetool.rules.RuleMatch;
+//
+//import java.io.BufferedWriter;
+//import java.io.StringReader;
+//import java.nio.charset.Charset;
+//import java.nio.file.Files;
+//import java.nio.file.Paths;
+//import java.nio.file.StandardOpenOption;
+//import java.util.ArrayList;
+//import java.util.HashMap;
+//import java.util.List;
+//import java.util.Map;
 
 /**
  * Copyright 2014-2016 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
@@ -37,7 +37,7 @@ import java.util.Map;
  * @author Nandana Mihindukulasooriya
  * @since 1.0.0
  */
-public class PropGrouper {
+/*public class PropGrouper {
 
     private static MaxentTagger tagger = new MaxentTagger("/home/nandana/tools/stanford-postagger-full-2015-12-09/models/english-left3words-distsim.tagger");
 
@@ -282,4 +282,4 @@ public class PropGrouper {
     }
 
 
-}
+}*/

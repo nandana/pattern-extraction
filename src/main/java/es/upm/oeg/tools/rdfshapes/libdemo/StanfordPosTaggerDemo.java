@@ -1,11 +1,13 @@
 package es.upm.oeg.tools.rdfshapes.libdemo;
 
+/*
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 import java.io.StringReader;
 import java.util.List;
+*/
 
 /**
  * Copyright 2014-2016 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
@@ -25,7 +27,7 @@ import java.util.List;
  * @author Nandana Mihindukulasooriya
  * @since 1.0.0
  */
-public class StanfordPosTaggerDemo {
+/*public class StanfordPosTaggerDemo {
 
     public static void main(String[] args) {
 
@@ -45,4 +47,4 @@ public class StanfordPosTaggerDemo {
 
     }
 
-}
+}*/
