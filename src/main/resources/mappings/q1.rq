@@ -1,0 +1,20 @@
+select ?t1 ?t2 ?p1 ?p2 (count(distinct ?s) as ?count)
+where {
+  graph ?graph1 {
+  ?s ?p1 ?o .
+  }
+  graph ?graph2 {
+  ?s ?p2 ?o .
+  }
+  graph ?linksGraph {
+    ?langS <http://www.w3.org/2002/07/owl#sameAs> ?s .
+   }
+  graph ?templateGraph1 {
+   ?s <http://dbpedia.org/property/wikiPageUsesTemplate> ?t1 .
+  }
+  graph ?templateGraph2 {
+   ?langS ?useTemplate2 ?t2 .
+  }
+  FILTER (?p1 != ?p2)
+} group by ?p1 ?p2 ?t1 ?t2
+order by desc(?count)

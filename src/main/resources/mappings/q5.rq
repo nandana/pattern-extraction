@@ -1,0 +1,17 @@
+select (count(distinct ?s) as ?count)
+where {
+  graph ?graph {
+  OPTIONAL { ?s ?p1 ?o1 } .
+  OPTIONAL { ?s ?p2 ?o2 } .
+  }
+  graph ?linksGraph {
+    ?langS <http://www.w3.org/2002/07/owl#sameAs> ?s .
+  }
+  graph ?templateGraph1 {
+    ?s <http://dbpedia.org/property/wikiPageUsesTemplate> ?t1 .
+  }
+  graph ?templateGraph2 {
+   ?langS ?useTemplate2 ?t2 .
+  }
+  FILTER (?o1 != ?o2)
+}

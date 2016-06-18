@@ -47,12 +47,12 @@ public class DatatypeObjectPropertyPatterns extends QueryBase {
     private static String literalCountQueryPath = "src/main/resources/query/literalCount.rq";
     private static String blankCountQueryPath = "src/main/resources/query/blankCount.rq";
     private static String iriCountQueryPath = "src/main/resources/query/iriCount.rq";
-    private static String classListPath = "src/main/resources/bne/classlist.txt";
+    private static String classListPath = "src/main/resources/3cixty/classlist.txt";
     private static String datatypeCountsPath = "src/main/resources/common/literal/datatype-count.sparql";
 
     public static void main(String[] args) throws Exception {
 
-        String endpoint = "http://infra2.dia.fi.upm.es:8899/sparql";
+        String endpoint = "http://3cixty.eurecom.fr/sparql";
 
         List<String> classList = Files.
                 readAllLines(Paths.get(classListPath),
@@ -78,6 +78,8 @@ public class DatatypeObjectPropertyPatterns extends QueryBase {
         int classStartRow = 0;
 
         for (String clazz : classList) {
+
+            System.out.println("Class: " + clazz );
 
             Map<String, String> litMap = new HashMap<>();
             Map<String, String> iriMap = ImmutableMap.of("class", clazz);
@@ -119,6 +121,8 @@ public class DatatypeObjectPropertyPatterns extends QueryBase {
 
             for (RDFNode property : nodeList) {
                 if (property.isURIResource()) {
+
+                    System.out.println("          " + property );
 
                     int tripleCount;
                     int objectCount;
@@ -236,7 +240,6 @@ public class DatatypeObjectPropertyPatterns extends QueryBase {
 //                    System.out.println();
                 }
             }
-            break;
         }
 
         String filename = "literals.xls" ;

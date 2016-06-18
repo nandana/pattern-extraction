@@ -1,5 +1,7 @@
 package es.upm.oeg.tools.rdfshapes.utils;
 
+import com.google.common.io.ByteStreams;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -32,7 +34,9 @@ public class IOUtils {
 
     public static String readFile(String path, Charset encoding)
             throws IOException {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
+
+        //byte[] encoded = Files.readAllBytes(Paths.get(path));
+        byte[] encoded = ByteStreams.toByteArray(IOUtils.class.getClassLoader().getResourceAsStream(path));
         return new String(encoded, encoding);
 
     }
