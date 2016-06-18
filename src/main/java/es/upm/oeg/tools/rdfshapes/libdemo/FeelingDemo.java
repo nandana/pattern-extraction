@@ -1,6 +1,6 @@
 package es.upm.oeg.tools.rdfshapes.libdemo;
 
-import edu.upc.freeling.*;
+//import edu.upc.freeling.*;
 
 /**
  * Copyright 2014-2016 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
@@ -20,6 +20,7 @@ import edu.upc.freeling.*;
  * @author Nandana Mihindukulasooriya
  * @since 1.0.0
  */
+/*
 public class FeelingDemo {
 
     // Modify this line to be your FreeLing installation directory
@@ -93,3 +94,4 @@ public class FeelingDemo {
 
 
 }
+*/

@@ -1,6 +1,6 @@
 package es.upm.oeg.tools.rdfshapes.libdemo;
 
-import edu.cmu.lti.lexical_db.ILexicalDatabase;
+/*import edu.cmu.lti.lexical_db.ILexicalDatabase;
 import edu.cmu.lti.lexical_db.NictWordNet;
 import edu.cmu.lti.ws4j.RelatednessCalculator;
 import edu.cmu.lti.ws4j.impl.*;
@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Map;*/
 
 /**
  * Copyright 2014-2016 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
@@ -33,7 +33,7 @@ import java.util.Map;
  * @author Nandana Mihindukulasooriya
  * @since 1.0.0
  */
-public class SimilarityCalculationDemo {
+/*public class SimilarityCalculationDemo {
 
     private static ILexicalDatabase db = new NictWordNet();
     private static RelatednessCalculator hirstStOnge = new HirstStOnge(db);
@@ -163,4 +163,4 @@ public class SimilarityCalculationDemo {
     }
 
 
-}
+}*/
