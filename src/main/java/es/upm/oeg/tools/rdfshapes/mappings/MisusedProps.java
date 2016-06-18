@@ -59,15 +59,11 @@ public class MisusedProps {
     public static final String EN_OBJ_G1 = "http://dbpedia.org";
     public static final String ES_OBJ_G1 = "http://es.dbpedia.org";
 
-    public static final String ES_LINKS_G = "http://es.dbpedia.org/links";
-
     public static final String EN_TEMPLATE_G = "http://dbpedia.org/templates";
-    public static final String ES_TEMPLATE_G = "http://es.dbpedia.org/templates";
+    public static final String ES_TEMPLATE_G = "http://dbpedia.org/es-templates";
 
     public static final String EN_TEMPLATE_PREFIX = "http://dbpedia.org/resource/Template:";
     public static final String ES_TEMPLATE_PREFIX = "http://es.dbpedia.org/resource/Plantilla:";
-
-    public static final String ES_WIKI_TEMP_PROP = "http://es.dbpedia.org/property/wikiPageUsesTemplate";
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat( "#,###,###,##0.0000");
 
@@ -96,11 +92,8 @@ public class MisusedProps {
 
         String graph1 = EN_OBJ_G1;
         String graph2 = ES_OBJ_G1;
-        String linksGraph = ES_LINKS_G;
         String templateGraph1 = EN_TEMPLATE_G;
         String templateGraph2 = ES_TEMPLATE_G;
-
-        String wikiUseTemplateProp2 = ES_WIKI_TEMP_PROP;
 
         List<PropPair> propPairList = new ArrayList<>();
 
@@ -108,10 +101,8 @@ public class MisusedProps {
         pss.setCommandText(Q1_String);
         pss.setIri("graph1", graph1);
         pss.setIri("graph2", graph2);
-        pss.setIri("linksGraph", linksGraph);
         pss.setIri("templateGraph1", templateGraph1);
         pss.setIri("templateGraph2", templateGraph2);
-        pss.setIri("useTemplate2 ", wikiUseTemplateProp2);
         String q1 = pss.toString();
 
         logger.debug("Query 1:\n{}" , q1);
@@ -138,10 +129,8 @@ public class MisusedProps {
             q2pss.setCommandText(Q2_String);
             q2pss.setIri("graph1", graph1);
             q2pss.setIri("graph2", graph2);
-            q2pss.setIri("linksGraph", linksGraph);
                     q2pss.setIri("templateGraph1", templateGraph1);
                     q2pss.setIri("templateGraph2", templateGraph2);
-                    q2pss.setIri("useTemplate2 ", wikiUseTemplateProp2);
             q2pss.setIri("p1", propPair.getPropA());
             q2pss.setIri("p2", propPair.getPropB());
             q2pss.setIri("t1", propPair.getTemplateA());
@@ -165,10 +154,8 @@ public class MisusedProps {
             ParameterizedSparqlString q3pss = new ParameterizedSparqlString();
             q3pss.setCommandText(Q3_String);
             q3pss.setIri("graph", graph1);
-                    q3pss.setIri("linksGraph", linksGraph);
                     q3pss.setIri("templateGraph1", templateGraph1);
                     q3pss.setIri("templateGraph2", templateGraph2);
-                    q3pss.setIri("useTemplate2 ", wikiUseTemplateProp2);
             q3pss.setIri("t1", propPair.getTemplateA());
             q3pss.setIri("t2", propPair.getTemplateB());
             q3pss.setIri("p1", propPair.getPropA());
@@ -211,10 +198,8 @@ public class MisusedProps {
             q4pss.setCommandText(Q4_String);
             q4pss.setIri("graph1", graph1);
             q4pss.setIri("graph2", graph2);
-                    q4pss.setIri("linksGraph", linksGraph);
                     q4pss.setIri("templateGraph1", templateGraph1);
                     q4pss.setIri("templateGraph2", templateGraph2);
-                    q4pss.setIri("useTemplate2 ", wikiUseTemplateProp2);
             q4pss.setIri("t1", propPair.getTemplateA());
             q4pss.setIri("t2", propPair.getTemplateB());
             q4pss.setIri("p1", propPair.getPropA());
@@ -239,10 +224,8 @@ public class MisusedProps {
             ParameterizedSparqlString q5pss = new ParameterizedSparqlString();
             q5pss.setCommandText(Q5_String);
             q5pss.setIri("graph", graph1);
-                    q5pss.setIri("linksGraph", linksGraph);
                     q5pss.setIri("templateGraph1", templateGraph1);
                     q5pss.setIri("templateGraph2", templateGraph2);
-                    q5pss.setIri("useTemplate2 ", wikiUseTemplateProp2);
             q5pss.setIri("t1", propPair.getTemplateA());
             q5pss.setIri("t2", propPair.getTemplateB());
             q5pss.setIri("p1", propPair.getPropA());
