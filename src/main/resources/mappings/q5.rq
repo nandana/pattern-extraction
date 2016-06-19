@@ -1,8 +1,7 @@
 select (count(distinct ?s) as ?count)
 where {
   graph ?graph {
-  OPTIONAL { ?s ?p1 ?o1 } .
-  OPTIONAL { ?s ?p2 ?o2 } .
+    { ?s ?p1 ?o1 } UNION { ?s ?p2 ?o2 } .
   }
   graph ?templateGraph1 {
     ?s <http://dbpedia.org/property/wikiPageUsesTemplate> ?t1 .
@@ -10,5 +9,4 @@ where {
   graph ?templateGraph2 {
    ?s <http://dbpedia.org/property/wikiPageUsesTemplate> ?t2 .
   }
-  FILTER (?o1 != ?o2)
 }

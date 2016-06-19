@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import es.upm.oeg.tools.rdfshapes.utils.IOUtils;
+import jdk.nashorn.internal.runtime.ECMAException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
 
 import static es.upm.oeg.tools.rdfshapes.utils.SparqlUtils.executeQueryForList;
 import static es.upm.oeg.tools.rdfshapes.utils.SparqlUtils.executeQueryForMap;
@@ -43,6 +45,7 @@ import static es.upm.oeg.tools.rdfshapes.utils.SparqlUtils.executeQueryForMap;
 public class MisusedProps {
 
     public static final String SPARQL_ENDPOINT = "http://4v.dia.fi.upm.es:8890/sparql";
+    //public static final String SPARQL_ENDPOINT = "http://172.17.0.1:8890/sparql";
 
     //private static final String Q1_PATH = "src/main/resources/mappings/q1.rq";
     private static final String Q1_PATH = "mappings/q1.rq";
@@ -65,7 +68,7 @@ public class MisusedProps {
     public static final String EN_TEMPLATE_PREFIX = "http://dbpedia.org/resource/Template:";
     public static final String ES_TEMPLATE_PREFIX = "http://es.dbpedia.org/resource/Plantilla:";
 
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat( "#,###,###,##0.0000");
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,###,###,##0.0000");
 
     private static final Logger logger = LoggerFactory.getLogger(MisusedProps.class);
 
@@ -82,18 +85,61 @@ public class MisusedProps {
         }
     }
 
+    String graph1;
+
+    String graph2;
+
+    String templateGraph1;
+
+    String templateGraph2;
+
+    BufferedWriter writer;
+
+    final Object lock = new Object();
+
     public static void main(String[] args) throws Exception {
 
+        MisusedProps props = new MisusedProps();
+        props.process();
+
+    }
+
+    //Initialize parameters
+    private void init() throws IOException {
+        graph1 = EN_OBJ_G1;
+        graph2 = ES_OBJ_G1;
+        templateGraph1 = EN_TEMPLATE_G;
+        templateGraph2 = ES_TEMPLATE_G;
 
         Path path = FileSystems.getDefault().getPath("/home/nandana/en-es-uri.csv");
-        BufferedWriter writer =
-                Files.newBufferedWriter( path, Charset.defaultCharset(),
-                        StandardOpenOption.CREATE);
+        writer = Files.newBufferedWriter(path, Charset.defaultCharset(),
+                StandardOpenOption.CREATE);
+    }
 
-        String graph1 = EN_OBJ_G1;
-        String graph2 = ES_OBJ_G1;
-        String templateGraph1 = EN_TEMPLATE_G;
-        String templateGraph2 = ES_TEMPLATE_G;
+    //Extract the data
+    public void process() throws Exception {
+
+        //Initialize the parameters
+        //TODO config as command line parameters
+        init();
+
+        //Extract the property pairs
+        List<PropPair> propPairList = extractPropPairs();
+
+        //Extract the metrics
+        new ForkJoinPool(20).submit(() -> {
+            propPairList.parallelStream()
+                    .forEach(propPair -> {
+                        collectMetrics(propPair);
+                    });
+        }).get();
+
+        writer.close();
+
+
+    }
+
+    private List<PropPair> extractPropPairs() {
 
         List<PropPair> propPairList = new ArrayList<>();
 
@@ -105,7 +151,7 @@ public class MisusedProps {
         pss.setIri("templateGraph2", templateGraph2);
         String q1 = pss.toString();
 
-        logger.debug("Query 1:\n{}" , q1);
+        logger.debug("Query 1:\n{}", q1);
 
         List<Map<String, RDFNode>> resultsMap = executeQueryForList(q1, SPARQL_ENDPOINT,
                 Sets.newHashSet("p1", "p2", "t1", "t2", "count"));
@@ -117,161 +163,168 @@ public class MisusedProps {
             String p2 = map.get("p2").asResource().getURI();
             long count = map.get("count").asLiteral().getLong();
 
-            PropPair pair = new PropPair(t1, t2, p1 , p2 , count);
+            PropPair pair = new PropPair(t1, t2, p1, p2, count);
             propPairList.add(pair);
         }
 
         logger.info("{} properties found", propPairList.size());
 
-        propPairList.parallelStream()
-                .forEach(propPair -> {
-            ParameterizedSparqlString q2pss = new ParameterizedSparqlString();
-            q2pss.setCommandText(Q2_String);
-            q2pss.setIri("graph1", graph1);
-            q2pss.setIri("graph2", graph2);
-                    q2pss.setIri("templateGraph1", templateGraph1);
-                    q2pss.setIri("templateGraph2", templateGraph2);
-            q2pss.setIri("p1", propPair.getPropA());
-            q2pss.setIri("p2", propPair.getPropB());
-            q2pss.setIri("t1", propPair.getTemplateA());
-            q2pss.setIri("t2", propPair.getTemplateB());
-            String q2 = q2pss.toString();
-
-                    Map<String, RDFNode> resultsList;
-                    try {
-                        resultsList = executeQueryForMap(q2, SPARQL_ENDPOINT,
-                                Sets.newHashSet("count"));
-                    } catch (Exception e) {
-                        logger.error("Error executing query:\n{}", q2, e);
-                        return;
-                    }
-
-            if (resultsList.size() > 0) {
-                long count = resultsList.get("count").asLiteral().getLong();
-                propPair.setM2(count);
-            }
-
-            ParameterizedSparqlString q3pss = new ParameterizedSparqlString();
-            q3pss.setCommandText(Q3_String);
-            q3pss.setIri("graph", graph1);
-                    q3pss.setIri("templateGraph1", templateGraph1);
-                    q3pss.setIri("templateGraph2", templateGraph2);
-            q3pss.setIri("t1", propPair.getTemplateA());
-            q3pss.setIri("t2", propPair.getTemplateB());
-            q3pss.setIri("p1", propPair.getPropA());
-            q3pss.setIri("p2", propPair.getPropB());
-            String q3a = q3pss.toString();
-
-                    try {
-                        resultsList = executeQueryForMap(q3a, SPARQL_ENDPOINT,
-                                Sets.newHashSet("count"));
-                    } catch (Exception e) {
-                        logger.error("Error executing query:\n{}", q3a, e);
-                        return;
-                    }
+        return propPairList;
+    }
 
 
-            if (resultsList.size() > 0) {
-                long count = resultsList.get("count").asLiteral().getLong();
-                propPair.setM3a(count);
-            }
+    private void collectMetrics(PropPair propPair) {
 
-            q3pss.setIri("graph", graph2);
-            String q3b = q3pss.toString();
+        logger.debug("Collecting metrics for {}, {}, {}, {}",
+                getPrefixedProperty(propPair.getPropA()),
+                getPrefixedProperty(propPair.getPropB()),
+                propPair.getTemplateA().replace(EN_TEMPLATE_PREFIX, ""),
+                propPair.getTemplateB().replace(ES_TEMPLATE_PREFIX, "")
+        );
 
+        ParameterizedSparqlString q2pss = new ParameterizedSparqlString();
+        q2pss.setCommandText(Q2_String);
+        q2pss.setIri("graph1", graph1);
+        q2pss.setIri("graph2", graph2);
+        q2pss.setIri("templateGraph1", templateGraph1);
+        q2pss.setIri("templateGraph2", templateGraph2);
+        q2pss.setIri("p1", propPair.getPropA());
+        q2pss.setIri("p2", propPair.getPropB());
+        q2pss.setIri("t1", propPair.getTemplateA());
+        q2pss.setIri("t2", propPair.getTemplateB());
+        String q2 = q2pss.toString();
 
-                    try {
-                        resultsList = executeQueryForMap(q3b, SPARQL_ENDPOINT,
-                                Sets.newHashSet("count"));
-                    } catch (Exception e) {
-                        logger.error("Error executing query:\n{}", q3b, e);
-                        return;
-                    }
+        Map<String, RDFNode> resultsList;
+        try {
+            resultsList = executeQueryForMap(q2, SPARQL_ENDPOINT,
+                    Sets.newHashSet("count"));
+        } catch (Exception e) {
+            logger.error("Error executing query: {}\n{}", e.getMessage(), q2, e);
+            return;
+        }
 
+        if (resultsList.size() > 0) {
+            long count = resultsList.get("count").asLiteral().getLong();
+            propPair.setM2(count);
+        }
 
-            if (resultsList.size() > 0) {
-                long count = resultsList.get("count").asLiteral().getLong();
-                propPair.setM3b(count);
-            }
+        ParameterizedSparqlString q3pss = new ParameterizedSparqlString();
+        q3pss.setCommandText(Q3_String);
+        q3pss.setIri("graph", graph1);
+        q3pss.setIri("templateGraph1", templateGraph1);
+        q3pss.setIri("templateGraph2", templateGraph2);
+        q3pss.setIri("t1", propPair.getTemplateA());
+        q3pss.setIri("t2", propPair.getTemplateB());
+        q3pss.setIri("p1", propPair.getPropA());
+        q3pss.setIri("p2", propPair.getPropB());
+        String q3a = q3pss.toString();
 
-            ParameterizedSparqlString q4pss = new ParameterizedSparqlString();
-            q4pss.setCommandText(Q4_String);
-            q4pss.setIri("graph1", graph1);
-            q4pss.setIri("graph2", graph2);
-                    q4pss.setIri("templateGraph1", templateGraph1);
-                    q4pss.setIri("templateGraph2", templateGraph2);
-            q4pss.setIri("t1", propPair.getTemplateA());
-            q4pss.setIri("t2", propPair.getTemplateB());
-            q4pss.setIri("p1", propPair.getPropA());
-            q4pss.setIri("p2", propPair.getPropB());
-            String q4 = q4pss.toString();
-
-                    try {
-                        resultsList = executeQueryForMap(q4, SPARQL_ENDPOINT,
-                                Sets.newHashSet("count"));
-                    } catch (Exception e) {
-                        logger.error("Error executing query:\n{}", q4, e);
-                        return;
-                    }
-
-
-
-            if (resultsList.size() > 0) {
-                long count = resultsList.get("count").asLiteral().getLong();
-                propPair.setM4(count);
-            }
-
-            ParameterizedSparqlString q5pss = new ParameterizedSparqlString();
-            q5pss.setCommandText(Q5_String);
-            q5pss.setIri("graph", graph1);
-                    q5pss.setIri("templateGraph1", templateGraph1);
-                    q5pss.setIri("templateGraph2", templateGraph2);
-            q5pss.setIri("t1", propPair.getTemplateA());
-            q5pss.setIri("t2", propPair.getTemplateB());
-            q5pss.setIri("p1", propPair.getPropA());
-            q5pss.setIri("p2", propPair.getPropB());
-            String q5a = q5pss.toString();
-
-                    try {
-                        resultsList = executeQueryForMap(q5a, SPARQL_ENDPOINT,
-                                Sets.newHashSet("count"));
-                    } catch (Exception e) {
-                        logger.error("Error executing query:\n{}", q5a, e);
-                        return;
-                    }
+        try {
+            resultsList = executeQueryForMap(q3a, SPARQL_ENDPOINT,
+                    Sets.newHashSet("count"));
+        } catch (Exception e) {
+            logger.error("Error executing query: {}\n{}", e.getMessage(), q3a, e);
+            return;
+        }
 
 
+        if (resultsList.size() > 0) {
+            long count = resultsList.get("count").asLiteral().getLong();
+            propPair.setM3a(count);
+        }
 
-            if (resultsList.size() > 0) {
-                long count = resultsList.get("count").asLiteral().getLong();
-                propPair.setM5a(count);
-            }
-
-            q5pss.setIri("graph", graph2);
-            String q5b = q5pss.toString();
-
-                    try {
-                        resultsList = executeQueryForMap(q5b, SPARQL_ENDPOINT,
-                                Sets.newHashSet("count"));
-                    } catch (Exception e) {
-                        logger.error("Error executing query:\n{}", q5a, e);
-                        return;
-                    }
+        q3pss.setIri("graph", graph2);
+        String q3b = q3pss.toString();
 
 
-            if (resultsList.size() > 0) {
-                long count = resultsList.get("count").asLiteral().getLong();
-                propPair.setM5b(count);
-            }
+        try {
+            resultsList = executeQueryForMap(q3b, SPARQL_ENDPOINT,
+                    Sets.newHashSet("count"));
+        } catch (Exception e) {
+            logger.error("Error executing query: {}, \n{}", e.getMessage(), q3b, e);
+            return;
+        }
 
-        });
 
-        propPairList.forEach(propPair -> {
+        if (resultsList.size() > 0) {
+            long count = resultsList.get("count").asLiteral().getLong();
+            propPair.setM3b(count);
+        }
+
+        ParameterizedSparqlString q4pss = new ParameterizedSparqlString();
+        q4pss.setCommandText(Q4_String);
+        q4pss.setIri("graph1", graph1);
+        q4pss.setIri("graph2", graph2);
+        q4pss.setIri("templateGraph1", templateGraph1);
+        q4pss.setIri("templateGraph2", templateGraph2);
+        q4pss.setIri("t1", propPair.getTemplateA());
+        q4pss.setIri("t2", propPair.getTemplateB());
+        q4pss.setIri("p1", propPair.getPropA());
+        q4pss.setIri("p2", propPair.getPropB());
+        String q4 = q4pss.toString();
+
+        try {
+            resultsList = executeQueryForMap(q4, SPARQL_ENDPOINT,
+                    Sets.newHashSet("count"));
+        } catch (Exception e) {
+            logger.error("Error executing query: {}\n{}", e.getMessage(), q4, e);
+            return;
+        }
+
+
+        if (resultsList.size() > 0) {
+            long count = resultsList.get("count").asLiteral().getLong();
+            propPair.setM4(count);
+        }
+
+        ParameterizedSparqlString q5pss = new ParameterizedSparqlString();
+        q5pss.setCommandText(Q5_String);
+        q5pss.setIri("graph", graph1);
+        q5pss.setIri("templateGraph1", templateGraph1);
+        q5pss.setIri("templateGraph2", templateGraph2);
+        q5pss.setIri("t1", propPair.getTemplateA());
+        q5pss.setIri("t2", propPair.getTemplateB());
+        q5pss.setIri("p1", propPair.getPropA());
+        q5pss.setIri("p2", propPair.getPropB());
+        String q5a = q5pss.toString();
+
+        try {
+            resultsList = executeQueryForMap(q5a, SPARQL_ENDPOINT,
+                    Sets.newHashSet("count"));
+        } catch (Exception e) {
+            logger.error("Error executing query: {}\n{}", e.getMessage(), q5a, e);
+            return;
+        }
+
+
+        if (resultsList.size() > 0) {
+            long count = resultsList.get("count").asLiteral().getLong();
+            propPair.setM5a(count);
+        }
+
+        q5pss.setIri("graph", graph2);
+        String q5b = q5pss.toString();
+
+        try {
+            resultsList = executeQueryForMap(q5b, SPARQL_ENDPOINT,
+                    Sets.newHashSet("count"));
+        } catch (Exception e) {
+            logger.error("Error executing query: {}\n{}", e.getMessage(), q5a, e);
+            return;
+        }
+
+
+        if (resultsList.size() > 0) {
+            long count = resultsList.get("count").asLiteral().getLong();
+            propPair.setM5b(count);
+        }
+
+        synchronized (lock) {
             try {
-                writer.write(propPair.getTemplateA().replace(EN_TEMPLATE_PREFIX, "dbten:")
-                        + ", " + propPair.getTemplateB().replace(ES_TEMPLATE_PREFIX, "dbtes:")
-                        + ", " + propPair.getPropA().replace("http://dbpedia.org/ontology/", "dbo:")
-                        + ", " + propPair.getPropB().replace("http://dbpedia.org/ontology/", "dbo:")
+                writer.write(propPair.getTemplateA().replace(EN_TEMPLATE_PREFIX, "")
+                        + ", " + propPair.getTemplateB().replace(ES_TEMPLATE_PREFIX, "")
+                        + ", " + getPrefixedProperty(propPair.getPropA())
+                        + ", " + getPrefixedProperty(propPair.getPropB())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM1()) / propPair.getM4())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM2()) / propPair.getM4())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3a()) / propPair.getM5a())
@@ -286,12 +339,14 @@ public class MisusedProps {
                         + ", " + propPair.getM5b()
                 );
                 writer.newLine();
+                writer.flush();
             } catch (Exception e) {
-                logger.error("Error serializing the results!", e);
+                logger.error("Error serializing the results! {}", e.getMessage(), e);
             }
-        });
+        }
+    }
 
-        writer.flush();
-        writer.close();
+    private static String getPrefixedProperty(String property) {
+        return property.replace("http://dbpedia.org/ontology/", "dbo:");
     }
 }
