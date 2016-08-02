@@ -67,11 +67,11 @@
       <artifactId>language-en</artifactId>
       <version>3.3</version>
     </dependency>
-<!--    <dependency>
-      <groupId>edu.stanford.nlp</groupId>
-      <artifactId>stanford-postagger</artifactId>
-      <version>3.6.0</version>
-    </dependency>-->
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-tools</artifactId>
+      <version>1.6.0</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-math3</artifactId>

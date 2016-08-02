@@ -1,0 +1,6 @@
+select ((count(distinct ?class)) as ?count) where {
+  graph ?graph {
+    ?class a <http://www.w3.org/2000/01/rdf-schema#Class>
+  }
+  FILTER(regex(str(?class), ?prefix , "i"))
+}

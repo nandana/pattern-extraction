@@ -1,0 +1,13 @@
+select ((count( distinct ?prop)) as ?count) where {
+
+  graph ?graph1 {
+    ?prop a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property>
+  }
+  MINUS {
+  graph ?graph2 {
+    ?prop a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property>
+  }
+        }
+  FILTER(regex(str(?prop), ?prefix , "i"))
+
+}
