@@ -24,6 +24,10 @@ public class PropPair {
 
     private String templateB;
 
+    private String attributeA;
+
+    private String attributeB;
+
     private String propA;
 
     private String propB;
@@ -54,9 +58,12 @@ public class PropPair {
         this.m1 = m1;
     }
 
-    public PropPair(String templateA, String templateB, String propA, String propB, long m1) {
+    public PropPair(String templateA, String templateB, String attributeA, String attributeB,
+                    String propA, String propB, long m1) {
         this.templateA = templateA;
         this.templateB = templateB;
+        this.attributeA = attributeA;
+        this.attributeB = attributeB;
         this.propA = propA;
         this.propB = propB;
         this.m1 = m1;
@@ -92,6 +99,22 @@ public class PropPair {
 
     public void setTemplateB(String templateB) {
         this.templateB = templateB;
+    }
+
+    public String getAttributeA() {
+        return attributeA;
+    }
+
+    public void setAttributeA(String attributeA) {
+        this.attributeA = attributeA;
+    }
+
+    public String getAttributeB() {
+        return attributeB;
+    }
+
+    public void setAttributeB(String attributeB) {
+        this.attributeB = attributeB;
     }
 
     public long getM1() {

@@ -1,4 +1,4 @@
-select ?t1 ?t2 ?p1 ?p2 (count(distinct ?s) as ?count)
+select ?p1 ?p2 ?t1 ?a1 ?t2 ?a2 (count(distinct ?s) as ?count)
 where {
   graph ?graph1 {
   ?s ?p1 ?o .
@@ -6,12 +6,19 @@ where {
   graph ?graph2 {
   ?s ?p2 ?o .
   }
-  graph ?templateGraph1 {
-   ?s <http://dbpedia.org/property/wikiPageUsesTemplate> ?t1 .
+  graph ?rGraph1 {
+   ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> ?s;
+       <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> ?p1;
+       <http://dbpedia.org/x-template> ?t1;
+       <http://dbpedia.org/x-attribute> ?a1 .
   }
-  graph ?templateGraph2 {
-   ?s <http://dbpedia.org/property/wikiPageUsesTemplate> ?t2 .
+  graph ?rGraph2 {
+   ?x2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> ?s;
+       <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> ?p2;
+       <http://dbpedia.org/x-template> ?t2;
+       <http://dbpedia.org/x-attribute> ?a2 .
   }
   FILTER (?p1 != ?p2)
-} group by ?p1 ?p2 ?t1 ?t2
+} group by ?p1 ?p2 ?t1 ?t2 ?a1 ?a2
 order by desc(?count)
+LIMIT 5000

@@ -4,11 +4,17 @@ where {
   ?s ?p1 ?o1 .
   ?s ?p2 ?o2 .
   }
-  graph ?templateGraph1 {
-    ?s <http://dbpedia.org/property/wikiPageUsesTemplate> ?t1 .
+  graph ?rGraph1 {
+   ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> ?s;
+       <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> ?p1;
+       <http://dbpedia.org/x-template> ?t1;
+       <http://dbpedia.org/x-attribute> ?a1 .
   }
-  graph ?templateGraph2 {
-   ?s <http://dbpedia.org/property/wikiPageUsesTemplate> ?t2 .
+  graph ?rGraph2 {
+   ?x2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> ?s;
+       <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> ?p2;
+       <http://dbpedia.org/x-template> ?t2;
+       <http://dbpedia.org/x-attribute> ?a2 .
   }
   FILTER (?o1 != ?o2)
 }

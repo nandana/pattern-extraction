@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import es.upm.oeg.tools.rdfshapes.utils.IOUtils;
-import jdk.nashorn.internal.runtime.ECMAException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +46,6 @@ public class MisusedProps {
     public static final String SPARQL_ENDPOINT = "http://4v.dia.fi.upm.es:8890/sparql";
     //public static final String SPARQL_ENDPOINT = "http://172.17.0.1:8890/sparql";
 
-    //private static final String Q1_PATH = "src/main/resources/mappings/q1.rq";
     private static final String Q1_PATH = "mappings/q1.rq";
     private static final String Q2_PATH = "mappings/q2.rq";
     private static final String Q3_PATH = "mappings/q3.rq";
@@ -58,15 +56,6 @@ public class MisusedProps {
     private static final String Q3_String;
     private static final String Q4_String;
     private static final String Q5_String;
-
-    public static final String EN_OBJ_G1 = "http://dbpedia.org";
-    public static final String ES_OBJ_G1 = "http://es.dbpedia.org";
-
-    public static final String EN_TEMPLATE_G = "http://dbpedia.org/templates";
-    public static final String ES_TEMPLATE_G = "http://dbpedia.org/es-templates";
-
-    public static final String EN_TEMPLATE_PREFIX = "http://dbpedia.org/resource/Template:";
-    public static final String ES_TEMPLATE_PREFIX = "http://es.dbpedia.org/resource/Plantilla:";
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,###,###,##0.0000");
 
@@ -89,9 +78,9 @@ public class MisusedProps {
 
     String graph2;
 
-    String templateGraph1;
+    String rGraph1;
 
-    String templateGraph2;
+    String rGraph2;
 
     BufferedWriter writer;
 
@@ -104,14 +93,29 @@ public class MisusedProps {
 
     }
 
+/*
+http://es.dbpedia.org/r
+http://es.dbpedia.org/lit/r
+http://es.dbpedia.org
+http://es.dbpedia.org/lit
+
+
+*/
+
+
     //Initialize parameters
     private void init() throws IOException {
-        graph1 = EN_OBJ_G1;
-        graph2 = ES_OBJ_G1;
-        templateGraph1 = EN_TEMPLATE_G;
-        templateGraph2 = ES_TEMPLATE_G;
+        graph1 =  "http://es.dbpedia.org";
+        graph2 = "http://de.dbpedia.org";
+        rGraph1 = "http://es.dbpedia.org/r";
+        rGraph2 = "http://de.dbpedia.org/r";
 
-        Path path = FileSystems.getDefault().getPath("/home/nandana/en-es-uri.csv");
+//        graph1 =  "http://es.dbpedia.org/lit";
+//        graph2 = "http://de.dbpedia.org/lit";
+//        rGraph1 = "http://es.dbpedia.org/lit/r";
+//        rGraph2 = "http://de.dbpedia.org/lit/r";
+
+        Path path = FileSystems.getDefault().getPath("/home/nandana/data/mappings/es-de-obj.csv");
         writer = Files.newBufferedWriter(path, Charset.defaultCharset(),
                 StandardOpenOption.CREATE);
     }
@@ -147,23 +151,25 @@ public class MisusedProps {
         pss.setCommandText(Q1_String);
         pss.setIri("graph1", graph1);
         pss.setIri("graph2", graph2);
-        pss.setIri("templateGraph1", templateGraph1);
-        pss.setIri("templateGraph2", templateGraph2);
+        pss.setIri("rGraph1", rGraph1);
+        pss.setIri("rGraph2", rGraph2);
         String q1 = pss.toString();
 
         logger.debug("Query 1:\n{}", q1);
 
         List<Map<String, RDFNode>> resultsMap = executeQueryForList(q1, SPARQL_ENDPOINT,
-                Sets.newHashSet("p1", "p2", "t1", "t2", "count"));
+                Sets.newHashSet("p1", "p2", "t1", "t2", "a1", "a2", "count"));
 
         for (Map<String, RDFNode> map : resultsMap) {
-            String t1 = map.get("t1").asResource().getURI();
-            String t2 = map.get("t2").asResource().getURI();
+            String t1 = map.get("t1").asLiteral().getString();
+            String t2 = map.get("t2").asLiteral().getString();
             String p1 = map.get("p1").asResource().getURI();
             String p2 = map.get("p2").asResource().getURI();
+            String a1 = map.get("a1").asLiteral().getString();
+            String a2 = map.get("a2").asLiteral().getString();
             long count = map.get("count").asLiteral().getLong();
 
-            PropPair pair = new PropPair(t1, t2, p1, p2, count);
+            PropPair pair = new PropPair(t1, t2, a1, a2, p1, p2, count);
             propPairList.add(pair);
         }
 
@@ -178,20 +184,22 @@ public class MisusedProps {
         logger.debug("Collecting metrics for {}, {}, {}, {}",
                 getPrefixedProperty(propPair.getPropA()),
                 getPrefixedProperty(propPair.getPropB()),
-                propPair.getTemplateA().replace(EN_TEMPLATE_PREFIX, ""),
-                propPair.getTemplateB().replace(ES_TEMPLATE_PREFIX, "")
+                propPair.getTemplateA(),
+                propPair.getTemplateB()
         );
 
         ParameterizedSparqlString q2pss = new ParameterizedSparqlString();
         q2pss.setCommandText(Q2_String);
         q2pss.setIri("graph1", graph1);
         q2pss.setIri("graph2", graph2);
-        q2pss.setIri("templateGraph1", templateGraph1);
-        q2pss.setIri("templateGraph2", templateGraph2);
+        q2pss.setIri("rGraph1", rGraph1);
+        q2pss.setIri("rGraph2", rGraph2);
         q2pss.setIri("p1", propPair.getPropA());
         q2pss.setIri("p2", propPair.getPropB());
-        q2pss.setIri("t1", propPair.getTemplateA());
-        q2pss.setIri("t2", propPair.getTemplateB());
+        q2pss.setLiteral("t1", propPair.getTemplateA());
+        q2pss.setLiteral("t2", propPair.getTemplateB());
+        q2pss.setLiteral("a1", propPair.getAttributeA());
+        q2pss.setLiteral("a2", propPair.getAttributeB());
         String q2 = q2pss.toString();
 
         Map<String, RDFNode> resultsList;
@@ -211,12 +219,14 @@ public class MisusedProps {
         ParameterizedSparqlString q3pss = new ParameterizedSparqlString();
         q3pss.setCommandText(Q3_String);
         q3pss.setIri("graph", graph1);
-        q3pss.setIri("templateGraph1", templateGraph1);
-        q3pss.setIri("templateGraph2", templateGraph2);
-        q3pss.setIri("t1", propPair.getTemplateA());
-        q3pss.setIri("t2", propPair.getTemplateB());
+        q3pss.setIri("rGraph1", rGraph1);
+        q3pss.setIri("rGraph2", rGraph2);
+        q3pss.setLiteral("t1", propPair.getTemplateA());
+        q3pss.setLiteral("t2", propPair.getTemplateB());
         q3pss.setIri("p1", propPair.getPropA());
         q3pss.setIri("p2", propPair.getPropB());
+        q2pss.setLiteral("a1", propPair.getAttributeA());
+        q2pss.setLiteral("a2", propPair.getAttributeB());
         String q3a = q3pss.toString();
 
         try {
@@ -255,12 +265,14 @@ public class MisusedProps {
         q4pss.setCommandText(Q4_String);
         q4pss.setIri("graph1", graph1);
         q4pss.setIri("graph2", graph2);
-        q4pss.setIri("templateGraph1", templateGraph1);
-        q4pss.setIri("templateGraph2", templateGraph2);
-        q4pss.setIri("t1", propPair.getTemplateA());
-        q4pss.setIri("t2", propPair.getTemplateB());
+        q4pss.setIri("rGraph1", rGraph1);
+        q4pss.setIri("rGraph2", rGraph2);
+        q4pss.setLiteral("t1", propPair.getTemplateA());
+        q4pss.setLiteral("t2", propPair.getTemplateB());
         q4pss.setIri("p1", propPair.getPropA());
         q4pss.setIri("p2", propPair.getPropB());
+        q2pss.setLiteral("a1", propPair.getAttributeA());
+        q2pss.setLiteral("a2", propPair.getAttributeB());
         String q4 = q4pss.toString();
 
         try {
@@ -280,12 +292,14 @@ public class MisusedProps {
         ParameterizedSparqlString q5pss = new ParameterizedSparqlString();
         q5pss.setCommandText(Q5_String);
         q5pss.setIri("graph", graph1);
-        q5pss.setIri("templateGraph1", templateGraph1);
-        q5pss.setIri("templateGraph2", templateGraph2);
-        q5pss.setIri("t1", propPair.getTemplateA());
-        q5pss.setIri("t2", propPair.getTemplateB());
+        q5pss.setIri("rGraph1", rGraph1);
+        q5pss.setIri("rGraph2", rGraph2);
+        q5pss.setLiteral("t1", propPair.getTemplateA());
+        q5pss.setLiteral("t2", propPair.getTemplateB());
         q5pss.setIri("p1", propPair.getPropA());
         q5pss.setIri("p2", propPair.getPropB());
+        q2pss.setLiteral("a1", propPair.getAttributeA());
+        q2pss.setLiteral("a2", propPair.getAttributeB());
         String q5a = q5pss.toString();
 
         try {
@@ -321,8 +335,10 @@ public class MisusedProps {
 
         synchronized (lock) {
             try {
-                writer.write(propPair.getTemplateA().replace(EN_TEMPLATE_PREFIX, "")
-                        + ", " + propPair.getTemplateB().replace(ES_TEMPLATE_PREFIX, "")
+                writer.write(propPair.getTemplateA()
+                        + ", " + propPair.getAttributeA()
+                        + ", " + propPair.getTemplateB()
+                        + ", " + propPair.getAttributeB()
                         + ", " + getPrefixedProperty(propPair.getPropA())
                         + ", " + getPrefixedProperty(propPair.getPropB())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM1()) / propPair.getM4())
@@ -334,7 +350,6 @@ public class MisusedProps {
                         + ", " + propPair.getM2()
                         + ", " + propPair.getM3a()
                         + ", " + propPair.getM3b()
-                        + ", " + propPair.getM4()
                         + ", " + propPair.getM5a()
                         + ", " + propPair.getM5b()
                 );
