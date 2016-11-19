@@ -1,0 +1,4 @@
+select (count(?s1) as ?c) where {
+    ?s1 ?p1 ?o .
+    ?o ?p2 ?o2 .
+}

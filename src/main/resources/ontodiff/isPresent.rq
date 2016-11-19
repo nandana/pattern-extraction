@@ -1,0 +1,5 @@
+ASK  {
+  graph ?graph {
+   ?prop ?p ?o
+  }
+}

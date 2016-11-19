@@ -1,0 +1,16 @@
+aircraftUser
+humanDevelopmentIndexRankingCategory
+musicians
+wikiPageWikiLink
+population
+academyAward
+emmyAward
+goldenGlobeAward
+goyaAward
+grammyAward
+nationalOlympicCommittee
+olympicOathSwornByAthlete
+olympicOathSwornByJudge
+achievement
+numberOfAcademicStaff
+annualTemperature

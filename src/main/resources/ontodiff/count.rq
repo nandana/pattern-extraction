@@ -1,0 +1,17 @@
+select ((count(distinct ?x)) as ?count) where {
+  graph ?graph {
+    ?x a ?type
+  }
+  FILTER(regex(str(?x), ?prefix , "i"))
+}
+
+
+
+
+
+
+
+
+
+
+

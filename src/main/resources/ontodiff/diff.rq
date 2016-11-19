@@ -1,0 +1,15 @@
+#select ((count( distinct ?x)) as ?count) where {
+
+select distinct ?x where {
+
+  graph ?graph1 {
+    ?x a ?type
+  }
+  MINUS {
+  graph ?graph2 {
+    ?x a ?type
+  }
+        }
+  FILTER(regex(str(?x), ?prefix , "i"))
+
+}

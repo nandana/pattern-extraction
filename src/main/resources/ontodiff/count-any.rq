@@ -1,0 +1,6 @@
+select ((count(distinct *)) as ?count) where {
+  graph ?graph {
+    ?x ?prop ?y
+  }
+  FILTER(regex(str(?x), ?prefix , "i") && (str(?y) != "http://www.w3.org/2002/07/owl#Thing"))
+}
