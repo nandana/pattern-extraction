@@ -105,17 +105,17 @@ http://es.dbpedia.org/lit
 
     //Initialize parameters
     private void init() throws IOException {
-        graph1 =  "http://es.dbpedia.org";
-        graph2 = "http://de.dbpedia.org";
-        rGraph1 = "http://es.dbpedia.org/r";
-        rGraph2 = "http://de.dbpedia.org/r";
+/*        graph1 =  "http://en.dbpedia.org";
+        graph2 = "http://el.dbpedia.org";
+        rGraph1 = "http://en.dbpedia.org/r";
+        rGraph2 = "http://el.dbpedia.org/r";*/
 
-//        graph1 =  "http://es.dbpedia.org/lit";
-//        graph2 = "http://de.dbpedia.org/lit";
-//        rGraph1 = "http://es.dbpedia.org/lit/r";
-//        rGraph2 = "http://de.dbpedia.org/lit/r";
+        graph1 =  "http://en.dbpedia.org/lit";
+        graph2 = "http://el.dbpedia.org/lit";
+        rGraph1 = "http://en.dbpedia.org/lit/r";
+        rGraph2 = "http://el.dbpedia.org/lit/r";
 
-        Path path = FileSystems.getDefault().getPath("/home/nandana/data/mappings/es-de-obj.csv");
+        Path path = FileSystems.getDefault().getPath("/home/nandana/data/mappings/en-el-lit.csv");
         writer = Files.newBufferedWriter(path, Charset.defaultCharset(),
                 StandardOpenOption.CREATE);
     }
@@ -180,6 +180,9 @@ http://es.dbpedia.org/lit
 
 
     private void collectMetrics(PropPair propPair) {
+
+        Thread.currentThread().setName("collect-metrics-" + getPrefixedProperty(propPair.getPropA())
+                + "-"+ getPrefixedProperty(propPair.getPropB()));
 
         logger.debug("Collecting metrics for {}, {}, {}, {}",
                 getPrefixedProperty(propPair.getPropA()),
