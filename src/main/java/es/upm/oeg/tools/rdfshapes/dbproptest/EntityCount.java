@@ -1,5 +1,13 @@
 package es.upm.oeg.tools.rdfshapes.dbproptest;
 
+import com.google.common.collect.ImmutableList;
+import com.hp.hpl.jena.query.ParameterizedSparqlString;
+import es.upm.oeg.tools.rdfshapes.utils.IOUtils;
+import es.upm.oeg.tools.rdfshapes.utils.SparqlUtils;
+
+import java.nio.charset.Charset;
+import java.util.List;
+
 /**
  * Copyright 2014-2016 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
  * <p>
@@ -19,4 +27,38 @@ package es.upm.oeg.tools.rdfshapes.dbproptest;
  * @since 1.0.0
  */
 public class EntityCount {
+
+    public static void main(String[] args) throws Exception {
+
+        List<String[]> classes = ImmutableList.of(
+                new String[]{"http://xmlns.com/foaf/0.1/Person", "foaf-person", "person"});
+                //new String[]{"http://dbpedia.org/ontology/Place", "dbo-place", "place"});
+                //new String[]{"http://dbpedia.org/ontology/Work", "dbo-work", "work"},
+                //new String[]{"http://dbpedia.org/ontology/Species", "dbo-species", "species"},
+                //new String[]{"http://dbpedia.org/ontology/Organisation", "dbo-organisation", "org"},
+                //new String[]{"http://dbpedia.org/ontology/Animal", "dbo-animal", "animal"},
+                //new String[]{"http://dbpedia.org/ontology/Film", "dbo-film", "film"},
+                //new String[]{"http://dbpedia.org/ontology/Artist", "dbo-artist", "artist"},
+                //new String[]{"http://dbpedia.org/ontology/Athlete", "dbo-athlete", "athlete"},
+                //new String[]{"http://dbpedia.org/ontology/MusicalWork", "dbo-musicalWork", "musicalWork"});
+
+        String endpoint = "http://4v.dia.fi.upm.es:10034/sparql";
+
+        String entityCountQuery  = IOUtils.readFile("dbproptest/entity-count.rq", Charset.defaultCharset());
+
+        for (String[] classData : classes) {
+
+            ParameterizedSparqlString pss = new ParameterizedSparqlString();
+            pss.setCommandText(entityCountQuery);
+            pss.setIri("class", classData[0]);
+
+            String queryString = pss.toString();
+
+            long count = SparqlUtils.executeQueryForLong(queryString, endpoint, "c");
+
+            System.out.println( classData[0] + " , " + count);
+
+        }
+
+    }
 }

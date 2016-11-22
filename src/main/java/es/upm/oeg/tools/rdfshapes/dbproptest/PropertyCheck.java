@@ -1,5 +1,12 @@
 package es.upm.oeg.tools.rdfshapes.dbproptest;
 
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Copyright 2014-2016 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
  * <p>
@@ -19,4 +26,32 @@ package es.upm.oeg.tools.rdfshapes.dbproptest;
  * @since 1.0.0
  */
 public class PropertyCheck {
+
+    public static void main(String[] args) throws Exception {
+
+        Map<String,Integer> v201604 = new HashMap<>();
+
+        List<String> propList = Files.
+                readAllLines(Paths.get("src/main/resources/dbproptest/results/data.csv"),
+                        Charset.defaultCharset());
+
+        List<String> v201604List = Files.
+                readAllLines(Paths.get("src/main/resources/owled/pv35.txt"),
+                        Charset.defaultCharset());
+
+        for (String prop : propList) {
+            String[] split = prop.split(",");
+            v201604.put(split[1], Integer.parseInt(split[5]));
+        }
+
+        for (String prop : v201604List) {
+            int count = v201604.get(prop);
+            if (count != 0) {
+                System.out.println(prop);
+            }
+        }
+
+    }
+
+
 }

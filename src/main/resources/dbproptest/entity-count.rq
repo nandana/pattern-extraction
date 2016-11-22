@@ -1,0 +1,4 @@
+select (count(distinct ?s) as ?c) where {
+    ?s ?p ?o ;
+        a ?class .
+}

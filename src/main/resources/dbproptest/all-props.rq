@@ -1,0 +1,11 @@
+select ((count(distinct ?x)) as ?count) where {
+  { ?x a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> }
+  UNION
+  { ?x a <http://www.w3.org/2002/07/owl#DatatypeProperty> }
+  UNION
+  { ?x a <http://www.w3.org/2002/07/owl#ObjectProperty> }
+
+
+  FILTER(regex(str(?x), "http://dbpedia.org/ontology/" , "i"))
+}
+

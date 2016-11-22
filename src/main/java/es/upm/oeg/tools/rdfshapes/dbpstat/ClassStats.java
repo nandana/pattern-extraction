@@ -6,6 +6,7 @@ import com.google.common.io.CharStreams;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.jena.atlas.RuntimeIOException;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -48,8 +49,13 @@ public class ClassStats {
         List<String> propertyList = Files.
                 readAllLines(Paths.get("src/main/resources/dbpstat/classes.txt"),
                         Charset.defaultCharset());
-        //List<String> langList = ImmutableList.of("en", "es", "de", "fr", "pt", "it", "nl", "pl", "ru", "bg");
-        List<String> langList = ImmutableList.of("en", "es", "de", "fr", "nl");
+        //List<String> langList = ImmutableList.of("en", "es", "de", "fr", "nl");
+
+        List<String> langList = ImmutableList.of("ar", "az", "be", "bg", "bn", "ca", "cs", "cy", "de", "el",
+                "en", "eo", "es", "eu", "fr", "ga", "hr", "hu", "hy", "id", "it", "ja", "ko", "nl", "pl", "pt", "ru", "sk", "sl", "sr", "sv", "tr", "uk");
+
+        int[] countArray = new int[langList.size()+1];
+        int[] propertyUsedCount = new int[propertyList.size()];
 
         String jsonString = readFile("dbpstat/stats-instances.json");
         JsonObject obj = new JsonParser().parse(jsonString).getAsJsonObject();
@@ -71,6 +77,7 @@ public class ClassStats {
 
         for (String lang : langList) {
 
+            int langClassUsageCount = 0;
             for (String property : propertyList) {
 
                 JsonElement ele = obj.get(lang).getAsJsonObject().get("objects").getAsJsonObject().get(property);
@@ -84,11 +91,15 @@ public class ClassStats {
 
                 if (ele != null) {
                     cell.setCellValue(String.valueOf(ele.getAsBigInteger()));
+                    langClassUsageCount++;
                 } else {
                     cell.setCellValue("0");
                 }
                 currentExcelRow++;
             }
+
+            //Print lang total property usage
+            System.out.println( langClassUsageCount);
 
             currentExcelRow = 0;
             currentColumn++;
@@ -114,6 +125,14 @@ public class ClassStats {
                 }
             }
 
+            // collect the counts
+            countArray[usedCount] = countArray[usedCount] + 1;
+            propertyUsedCount[currentExcelRow] = usedCount;
+
+            //System.out.println("<" + property + "> " + "<http://www.w3.org/ns/odrl/2/count> " + usedCount + " .");
+
+            System.out.println("<" + property + "> " + "<http://www.w3.org/ns/odrl/2/list> \"" + Joiner.on(",").join(langs) + "\" .");
+
             XSSFCell cellCount = row.createCell(langSize+1);
             cellCount.setCellValue(usedCount);
 
@@ -123,7 +142,40 @@ public class ClassStats {
             currentExcelRow++;
         }
 
-        String filename = "class.xls" ;
+        for (String lang : langList) {
+
+            int[] matrixRaw = new int[langList.size()];
+
+            int propertyCount = 0;
+            for (String property : propertyList) {
+
+                JsonElement ele = obj.get(lang).getAsJsonObject().get("objects").getAsJsonObject().get(property);
+                if (ele != null) {
+                    int usedCount = propertyUsedCount[propertyCount];
+                    if (usedCount == 0) {
+                        throw new RuntimeException("Used count can not be 0 for a property used by a lang");
+                    }
+                    matrixRaw[usedCount-1] = matrixRaw[usedCount-1] + 1;
+
+                } else {
+
+                }
+                propertyCount++;
+            }
+
+//            System.out.println(lang);
+//            for (int cell: matrixRaw) {
+//                System.out.print(cell + ", ");
+//            }
+//            System.out.println();
+//            System.out.println();
+
+        }
+
+
+
+
+        String filename = "class2.xls" ;
         FileOutputStream fileOut = new FileOutputStream(filename);
         wb.write(fileOut);
         fileOut.close();

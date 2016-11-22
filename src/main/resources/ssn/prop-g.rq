@@ -1,0 +1,6 @@
+SELECT (count (distinct ?g) as ?c) WHERE
+{
+  graph ?g {
+     ?s ?p ?o
+  }
+}

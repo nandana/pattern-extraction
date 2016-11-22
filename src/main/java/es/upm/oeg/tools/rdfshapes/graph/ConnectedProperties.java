@@ -1,5 +1,21 @@
 package es.upm.oeg.tools.rdfshapes.graph;
 
+import com.hp.hpl.jena.query.ParameterizedSparqlString;
+import es.upm.oeg.tools.rdfshapes.utils.IOUtils;
+import es.upm.oeg.tools.rdfshapes.utils.SparqlUtils;
+
+import java.io.BufferedWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+
 /**
  * Copyright 2014-2016 Ontology Engineering Group, Universidad Politécnica de Madrid, Spain
  * <p>
@@ -19,4 +35,35 @@ package es.upm.oeg.tools.rdfshapes.graph;
  * @since 1.0.0
  */
 public class ConnectedProperties {
+
+    public static void main(String[] args) throws Exception {
+
+//        BufferedWriter writer =
+//                Files.newBufferedWriter(
+//                        Paths.get("src/main/resources/graphs/connected-props-results.txt"),
+//                        Charset.forName("UTF-8"),
+//                        StandardOpenOption.CREATE);
+
+        List<String> propList = Files.
+                readAllLines(Paths.get("src/main/resources/graphs/prop-all.txt"),
+                        Charset.defaultCharset());
+
+
+        System.out.println("propertyA|propertyB|c1|c2|t1|t2");
+
+        final ExecutorService executor = Executors.newFixedThreadPool(5);
+
+        for (int i = 0; i < propList.size(); i++) {
+            for (int j = i ; j < propList.size(); j++) {
+
+                executor.submit(new ConnectedPropertyQuery(propList.get(i), propList.get(j)));
+
+            }
+
+        }
+
+    }
+
+
+
 }

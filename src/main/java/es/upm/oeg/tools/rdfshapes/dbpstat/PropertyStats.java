@@ -45,12 +45,18 @@ public class PropertyStats {
 
     public static void main(String[] args) throws Exception {
 
-
         List<String> propertyList = Files.
                 readAllLines(Paths.get("src/main/resources/dbpstat/props.txt"),
                         Charset.defaultCharset());
-        //List<String> langList = ImmutableList.of("en", "es", "de", "fr", "pt", "it", "nl", "pl", "ru", "bg");
-        List<String> langList = ImmutableList.of("en", "es", "de", "fr", "nl");
+        List<String> langList = ImmutableList.of("ar", "az", "be", "bg", "bn", "ca", "cs", "cy", "de", "el",
+                "en", "eo", "es", "eu", "fr", "ga", "hr", "hu", "hy", "id", "it", "ja", "ko", "nl", "pl", "pt", "ru", "sk", "sl", "sr", "sv", "tr", "uk");
+
+        int[] countArray = new int[langList.size()+1];
+        int[] propertyUsageCount = new int[propertyList.size()];
+
+
+        //List<String> langList = ImmutableList.of("en", "es", "de", "fr", "nl");
+
 
 
         Gson gson = new Gson();
@@ -75,6 +81,7 @@ public class PropertyStats {
 
         for (String lang : langList) {
 
+            int langPropertyUsageCount = 0;
             for (String property : propertyList) {
 
                 JsonElement ele = obj.get(lang).getAsJsonObject().get("properties").getAsJsonObject().get(property);
@@ -88,11 +95,15 @@ public class PropertyStats {
 
                 if (ele != null) {
                     cell.setCellValue(String.valueOf(ele.getAsBigInteger()));
+                    langPropertyUsageCount++;
                 } else {
                     cell.setCellValue("0");
                 }
                 currentExcelRow++;
             }
+
+            //Print lang total property usage
+            System.out.println( langPropertyUsageCount);
 
             currentExcelRow = 0;
             currentColumn++;
@@ -118,6 +129,10 @@ public class PropertyStats {
                 }
             }
 
+            // collect the counts
+            countArray[usedCount] = countArray[usedCount] + 1;
+            propertyUsageCount[currentExcelRow] = usedCount;
+
             XSSFCell cellCount = row.createCell(langSize+1);
             cellCount.setCellValue(usedCount);
 
@@ -127,18 +142,66 @@ public class PropertyStats {
             currentExcelRow++;
         }
 
-        String filename = "props2.xls" ;
+        for (int i = 0; i <= langList.size(); i++) {
+            System.out.println(countArray[i]);
+        }
+
+        //Create the Excel workbook and sheet
+        XSSFWorkbook matrixWB = new XSSFWorkbook();
+        XSSFSheet matrixSheet = matrixWB.createSheet("matrix");
+        currentExcelRow = 0;
+
+        for (String lang : langList) {
+
+            XSSFRow row = matrixSheet.createRow(currentExcelRow);
+            row.createCell(0).setCellValue(lang);
+            int[] matrixRaw = new int[langList.size()];
+
+            int propertyCount = 0;
+            for (String property : propertyList) {
+
+                JsonElement ele = obj.get(lang).getAsJsonObject().get("properties").getAsJsonObject().get(property);
+                if (ele != null) {
+                    int usedCount = propertyUsageCount[propertyCount];
+                    if (usedCount == 0) {
+                        throw new RuntimeException("Used count can not be 0 for a property used by a lang");
+                    }
+                    matrixRaw[usedCount-1] = matrixRaw[usedCount-1] + 1;
+
+                } else {
+
+                }
+                propertyCount++;
+            }
+
+            int currentCell = 1;
+            for (int freqCount: matrixRaw) {
+                XSSFCell cell = row.createCell(currentCell);
+                cell.setCellValue(freqCount);
+                currentCell++;
+            }
+
+            System.out.println(lang);
+            for (int cell: matrixRaw) {
+                System.out.print(cell + ", ");
+            }
+            System.out.println();
+            System.out.println();
+
+            currentExcelRow++;
+        }
+
+        String matrixFilename = "propsMatrix.xls" ;
+        FileOutputStream matrixOut = new FileOutputStream(matrixFilename);
+        matrixWB.write(matrixOut);
+        matrixOut.close();
+
+        String filename = "props3.xls" ;
         FileOutputStream fileOut = new FileOutputStream(filename);
         wb.write(fileOut);
         fileOut.close();
 
     }
-
-
-
-
-
-
 
 
 

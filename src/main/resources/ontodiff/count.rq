@@ -1,8 +1,8 @@
-select ((count(distinct ?prop)) as ?count) where {
+select ((count(distinct ?x)) as ?count) where {
   graph ?graph {
-    ?prop a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property>
+    ?x a ?type
   }
-  FILTER(regex(str(?prop), ?prefix , "i"))
+  FILTER(regex(str(?x), ?prefix , "i"))
 }
 
 
