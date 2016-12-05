@@ -45,7 +45,7 @@ public class ConnectedProperties {
 //                        StandardOpenOption.CREATE);
 
         List<String> propList = Files.
-                readAllLines(Paths.get("src/main/resources/graphs/prop-all.txt"),
+                readAllLines(Paths.get("src/main/resources/graphs/prop-list.txt"),
                         Charset.defaultCharset());
 
 
