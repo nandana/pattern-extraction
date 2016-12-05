@@ -1,0 +1,4 @@
+select distinct ?c  where {
+ ?s <http://rdfs.org/ns/void#class> ?class ;
+    <http://rdfs.org/ns/void#entities> ?c .
+}

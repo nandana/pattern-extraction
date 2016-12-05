@@ -32,9 +32,12 @@ public class DatasetCheck {
     public static void main(String[] args) throws Exception {
 
         String lodCache = "http://lod.openlinksw.com/sparql";
-        String esDBpedia = "http://es.dbpedia.org/sparql";
-        String frDBpedia = "http://fr.dbpedia.org/sparql";
-        String deDBpedia = "http://pt.dbpedia.org/sparql";
+
+        List<String> classList = Files.
+                readAllLines(Paths.get("src/main/resources/ssn/subClass.txt"),
+                        Charset.defaultCharset());
+        String classQuery  = IOUtils.readFile("ssn/class.rq", Charset.defaultCharset());
+
 
         List<String> propList = Files.
                 readAllLines(Paths.get("src/main/resources/ssn/propertyList.txt"),
@@ -45,19 +48,19 @@ public class DatasetCheck {
                 readAllLines(Paths.get("src/main/resources/owled/p.txt"),
                         Charset.defaultCharset());
 
-        for (String prop : v201604List) {
+        for (String clazz : classList) {
 
             ParameterizedSparqlString pss = new ParameterizedSparqlString();
-            pss.setCommandText(propertyQuery);
-            pss.setIri("p", prop);
+            pss.setCommandText(classQuery);
+            pss.setIri("class", clazz);
 
             String queryString = pss.toString();
-            //System.out.println(queryString);
+            System.out.println(queryString);
 
-            long count = SparqlUtils.executeQueryForLong(queryString, deDBpedia, "c");
+            long count = SparqlUtils.executeQueryForLong(queryString, lodCache, "c");
 
             if (count > 0) {
-                System.out.println(prop + "," + count);
+                System.out.println(clazz + "," + count);
             }
         }
 

@@ -6,6 +6,7 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import es.upm.oeg.tools.rdfshapes.utils.IOUtils;
 import es.upm.oeg.tools.rdfshapes.utils.SparqlUtils;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -32,35 +33,64 @@ import java.util.Map;
  */
 public class LODStats {
 
+    private static final String lodStats = "http://stats.lod2.eu/sparql";
+
+    private static final String propertyQuery;
+
+    private static final String classQuery ;
+
+
+    static {
+        try{
+            propertyQuery=IOUtils.readFile("ssn/lodstat-prop.rq",Charset.defaultCharset());
+            classQuery = IOUtils.readFile("ssn/lodstat-class.rq",Charset.defaultCharset());
+        } catch (IOException e){
+            throw new IllegalStateException("Error loading the queries ...");
+        }
+    }
+
     public static void main(String[] args) throws Exception {
-        String lodStats = "http://stats.lod2.eu/sparql";
+
 
         List<String> propList = Files.
                 readAllLines(Paths.get("src/main/resources/ssn/propertyList.txt"),
                         Charset.defaultCharset());
-        String propertyQuery  = IOUtils.readFile("ssn/lodstat-prop.rq", Charset.defaultCharset());
 
-        for (String prop : propList) {
+        List<String> classList = Files.
+                readAllLines(Paths.get("src/main/resources/ssn/classList.txt"),
+                        Charset.defaultCharset());
 
-            System.out.println(prop);
+        printInstanceCount(classList);
+
+
+    }
+
+    public static void printInstanceCount(List<String> classList) {
+
+        for (String clazz : classList) {
 
             ParameterizedSparqlString pss = new ParameterizedSparqlString();
-            pss.setCommandText(propertyQuery);
-            pss.setIri("p", prop);
+            pss.setCommandText(classQuery);
+            pss.setIri("class", clazz);
 
             String queryString = pss.toString();
-            //System.out.println(queryString);
+            System.out.println(clazz);
 
-            List<Map<String, RDFNode>> maps = SparqlUtils.executeQueryForList(queryString, lodStats, ImmutableSet.of("tcount"));
+            List<Map<String, RDFNode>> maps = SparqlUtils.executeQueryForList(queryString, lodStats, ImmutableSet.of("c"));
 
             for (Map<String, RDFNode> map : maps) {
 
-                System.out.println(map.get("tcount").asLiteral());
+                System.out.println(clazz + "," + map.get("c").asLiteral());
             }
 
         }
 
 
 
+
+
+
     }
+
+
 }

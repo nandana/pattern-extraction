@@ -1,0 +1,6 @@
+select ?s ?o where {
+  ?s a <http://dbpedia.org/ontology/Animal>;
+    ?p ?o .
+
+}
+LIMIT 25
