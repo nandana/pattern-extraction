@@ -37,4 +37,3 @@ http://purl.oclc.org/NET/ssnx/ssn#onPlatform
 http://purl.oclc.org/NET/ssnx/ssn#qualityOfObservation
 http://purl.oclc.org/NET/ssnx/ssn#sensingMethodUsed
 http://purl.oclc.org/NET/ssnx/ssn#startTime
-http://xmlns.com/foaf/0.1/name

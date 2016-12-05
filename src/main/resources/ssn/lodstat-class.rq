@@ -1,4 +1,12 @@
-select distinct ?c  where {
- ?s <http://rdfs.org/ns/void#class> ?class ;
-    <http://rdfs.org/ns/void#entities> ?c .
+select distinct ?url ?c where {
+
+?void <http://rdfs.org/ns/void#classPartition> ?classPartition;
+     <http://xmlns.com/foaf/0.1/primaryTopic> ?rdfdoc .
+
+?classPartition <http://rdfs.org/ns/void#class> ?class ;
+       <http://rdfs.org/ns/void#entities> ?c .
+
+ OPTIONAL {
+   ?rdfdoc <http://www.w3.org/ns/dcat#downloadURL> ?url
+  }
 }

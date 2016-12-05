@@ -1,11 +1,11 @@
-select distinct ?tcount  where {
-#?x ?p  ?s .
-#?x <http://xmlns.com/foaf/0.1/primaryTopic> ?rdfdoc .
+select distinct ?url ?c where {
 
-#?x <http://www.w3.org/2002/07/owl#sameAs>  ?y .
-?s <http://rdfs.org/ns/void#triples> ?tcount;
+?void <http://rdfs.org/ns/void#propertyPartition> ?propPartition;
+     <http://xmlns.com/foaf/0.1/primaryTopic> ?rdfdoc .
+
+?propPartition <http://rdfs.org/ns/void#triples> ?c;
    <http://rdfs.org/ns/void#property> ?p .
-# OPTIONAL {
-#   ?rdfdoc <http://www.w3.org/ns/dcat#downloadURL> ?url
-#  }
+ OPTIONAL {
+   ?rdfdoc <http://www.w3.org/ns/dcat#downloadURL> ?url
+  }
 }
