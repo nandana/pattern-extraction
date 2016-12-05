@@ -168,7 +168,7 @@ public class DiffChecker {
 
 
         DiffChecker diff = new DiffChecker(foafGraphs, foafPrefix, sparqlEndpoint);
-        diff.printDiff(OWL_OBJECT_PROPERTY);
+        diff.printDiff(OWL_CLASS);
     }
 
 

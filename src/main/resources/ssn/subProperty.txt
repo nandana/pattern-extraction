@@ -1,0 +1,17 @@
+https://w3id.org/BCI-ontology#detects
+https://w3id.org/BCI-ontology#aspectOfInterest
+https://w3id.org/BCI-ontology#forModality
+https://w3id.org/BCI-ontology#hasNonChannelData
+https://w3id.org/BCI-ontology#hasModality
+https://w3id.org/BCI-ontology#hasValue
+https://w3id.org/BCI-ontology#isProducedByDevice
+https://w3id.org/BCI-ontology#isModalityOf
+https://w3id.org/BCI-ontology#isProxyFor
+https://w3id.org/BCI-ontology#madeRecord
+https://w3id.org/BCI-ontology#observationResult
+https://w3id.org/BCI-ontology#observedByDevice
+https://w3id.org/BCI-ontology#observedModality
+https://w3id.org/BCI-ontology#observes
+https://w3id.org/BCI-ontology#ofAspect
+http://www.irit.fr/recherches/MELODI/ontologies/SAN#hasActuatingCapability
+http://www.irit.fr/recherches/MELODI/ontologies/SAN#hasActuatingProperty

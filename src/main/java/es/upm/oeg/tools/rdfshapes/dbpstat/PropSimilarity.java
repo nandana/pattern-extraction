@@ -1,9 +1,9 @@
 package es.upm.oeg.tools.rdfshapes.dbpstat;
 
+import com.google.common.base.Joiner;
 import es.upm.oeg.tools.rdfshapes.stringsimilarity.Jaccard;
 import es.upm.oeg.tools.rdfshapes.stringsimilarity.JaroWinkler;
 import es.upm.oeg.tools.rdfshapes.stringsimilarity.NormalizedLevenshtein;
-import org.elasticsearch.common.base.Joiner;
 
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -35,14 +35,22 @@ public class PropSimilarity {
     public static void main(String[] args) throws Exception {
 
 
-        List<String> allProps = Files.
-                readAllLines(Paths.get("src/main/resources/dbpstat/prop-all.txt"),
+//        List<String> allProps = Files.
+//                readAllLines(Paths.get("src/main/resources/dbpstat/prop-all.txt"),
+//                        Charset.defaultCharset());
+//
+//        List<String> frProps = Files.
+//                readAllLines(Paths.get("src/main/resources/dbpstat/prop-nl.txt"),
+//                        Charset.defaultCharset());
+
+        List<String> rdfProps = Files.
+                readAllLines(Paths.get("src/main/resources/caceres/rdf.txt"),
                         Charset.defaultCharset());
 
-        List<String> frProps = Files.
-                readAllLines(Paths.get("src/main/resources/dbpstat/prop-nl.txt"),
+        List<String> tripadvisorProps = Files.
+                readAllLines(Paths.get("src/main/resources/caceres/tenedor.txt"),
                         Charset.defaultCharset());
-        System.out.println("Size : " + frProps.size());
+
 
         Jaccard jaccard = new Jaccard();
 
@@ -50,12 +58,18 @@ public class PropSimilarity {
 
         JaroWinkler jaroWinkler = new JaroWinkler();
 
-        for (String frProp : frProps) {
-            for (String prop : allProps) {
-                System.out.println(Joiner.on(", ").join(tokenize(prop)));
-                if (levenshtein.similarity(frProp, prop) > 0.9
-                        & !frProp.equals(prop)) {
-                    System.out.println("FR: " + frProp + ", " + prop);
+        for (String rdfProp : rdfProps) {
+            for (String tripAdvisorProp : tripadvisorProps) {
+
+                String tripAdvisor = tripAdvisorProp;
+                String rdf = rdfProp;
+
+                tripAdvisorProp = tripAdvisorProp.toLowerCase().replace("restaurante", "").replace("tapería", "");
+                rdfProp = rdfProp.toLowerCase().replace("restaurante", "").replace("tapería", "");
+
+
+                if (jaroWinkler.similarity(tripAdvisorProp, rdfProp) > 0.9) {
+                    System.out.println(rdf + "," + tripAdvisor);
                 }
             }
         }
