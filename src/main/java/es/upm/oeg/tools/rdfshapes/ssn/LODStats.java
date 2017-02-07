@@ -74,21 +74,47 @@ public class LODStats {
             pss.setIri("class", clazz);
 
             String queryString = pss.toString();
-            System.out.println(clazz);
+            System.out.println(queryString);
 
             List<Map<String, RDFNode>> maps = SparqlUtils.executeQueryForList(queryString, lodStats, ImmutableSet.of("c"));
 
             for (Map<String, RDFNode> map : maps) {
 
-                System.out.println(clazz + "," + map.get("c").asLiteral());
+                String url = "none";
+                if (map.get("url") != null) {
+                    url = map.get("url").asResource().getURI();
+                }
+
+                System.out.println(clazz + "," + map.get("c").asLiteral() + "," + url);
             }
 
         }
 
+    }
 
 
+    public static void check4Triples(List<String> propertyList, String endpoint){
 
+        for (String property : propertyList) {
 
+            ParameterizedSparqlString pss = new ParameterizedSparqlString();
+            pss.setCommandText(propertyQuery);
+            pss.setIri("p", property);
+
+            String queryString = pss.toString();
+
+            List<Map<String, RDFNode>> maps = SparqlUtils.executeQueryForList(queryString, lodStats, ImmutableSet.of("c", "url"));
+
+            for (Map<String, RDFNode> map : maps) {
+
+                String url = "none";
+                if (map.get("url") != null) {
+                    url = map.get("url").asResource().getURI();
+                }
+                System.out.println(property + "," + map.get("c").asLiteral() + "," + url);
+            }
+
+        }
 
     }
 

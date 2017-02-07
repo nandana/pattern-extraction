@@ -31,10 +31,10 @@ public class DatasetCheck {
 
     public static void main(String[] args) throws Exception {
 
-        String lodCache = "http://ontology.irstea.fr/weather/query";
+        String lodCache = "http://lod.openlinksw.com/sparql";
 
         List<String> classList = Files.
-                readAllLines(Paths.get("src/main/resources/ssn/classList.txt"),
+                readAllLines(Paths.get("src/main/resources/ssn/subClass.txt"),
                         Charset.defaultCharset());
         String classQuery  = IOUtils.readFile("ssn/class.rq", Charset.defaultCharset());
 
@@ -48,8 +48,6 @@ public class DatasetCheck {
                 readAllLines(Paths.get("src/main/resources/owled/p.txt"),
                         Charset.defaultCharset());
 
-        System.out.println("------------------ CLASSES -------------------------------");
-
         for (String clazz : classList) {
 
             ParameterizedSparqlString pss = new ParameterizedSparqlString();
@@ -57,30 +55,12 @@ public class DatasetCheck {
             pss.setIri("class", clazz);
 
             String queryString = pss.toString();
-            //System.out.println(clazz);
+            System.out.println(queryString);
 
             long count = SparqlUtils.executeQueryForLong(queryString, lodCache, "c");
 
             if (count > 0) {
                 System.out.println(clazz + "," + count);
-            }
-        }
-
-        System.out.println("------------------ PROPERTIES -------------------------------");
-
-        for (String property : propList) {
-
-            ParameterizedSparqlString pss = new ParameterizedSparqlString();
-            pss.setCommandText(propertyQuery);
-            pss.setIri("p", property);
-
-            String queryString = pss.toString();
-            //System.out.println(property);
-
-            long count = SparqlUtils.executeQueryForLong(queryString, lodCache, "c");
-
-            if (count > 0) {
-                System.out.println(property + "," + count);
             }
         }
 
