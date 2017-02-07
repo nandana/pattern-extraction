@@ -105,17 +105,17 @@ http://es.dbpedia.org/lit
 
     //Initialize parameters
     private void init() throws IOException {
-/*        graph1 =  "http://en.dbpedia.org";
-        graph2 = "http://el.dbpedia.org";
-        rGraph1 = "http://en.dbpedia.org/r";
-        rGraph2 = "http://el.dbpedia.org/r";*/
+//        graph1 =  "http://en.dbpedia.org";
+//        graph2 = "http://pl.dbpedia.org";
+//        rGraph1 = "http://en.dbpedia.org/r";
+//        rGraph2 = "http://pl.dbpedia.org/r";
 
         graph1 =  "http://en.dbpedia.org/lit";
-        graph2 = "http://el.dbpedia.org/lit";
+        graph2 = "http://es.dbpedia.org/lit";
         rGraph1 = "http://en.dbpedia.org/lit/r";
-        rGraph2 = "http://el.dbpedia.org/lit/r";
+        rGraph2 = "http://es.dbpedia.org/lit/r";
 
-        Path path = FileSystems.getDefault().getPath("/home/nandana/data/mappings/en-el-lit.csv");
+        Path path = FileSystems.getDefault().getPath("/home/nandana/data/mappings/en-pl-lit.csv");
         writer = Files.newBufferedWriter(path, Charset.defaultCharset(),
                 StandardOpenOption.CREATE);
     }
@@ -183,6 +183,8 @@ http://es.dbpedia.org/lit
 
         Thread.currentThread().setName("collect-metrics-" + getPrefixedProperty(propPair.getPropA())
                 + "-"+ getPrefixedProperty(propPair.getPropB()));
+
+        DBO dbo = new DBO();
 
         logger.debug("Collecting metrics for {}, {}, {}, {}",
                 getPrefixedProperty(propPair.getPropA()),
@@ -343,7 +345,11 @@ http://es.dbpedia.org/lit
                         + ", " + propPair.getTemplateB()
                         + ", " + propPair.getAttributeB()
                         + ", " + getPrefixedProperty(propPair.getPropA())
+                        + ", " + getPrefixedProperty(dbo.getDomain(propPair.getPropA()))
+                        + ", " + getPrefixedProperty(dbo.getRange(propPair.getPropA()))
                         + ", " + getPrefixedProperty(propPair.getPropB())
+                        + ", " + getPrefixedProperty(dbo.getDomain(propPair.getPropB()))
+                        + ", " + getPrefixedProperty(dbo.getRange(propPair.getPropB()))
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM1()) / propPair.getM4())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM2()) / propPair.getM4())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM3a()) / propPair.getM5a())
@@ -365,6 +371,8 @@ http://es.dbpedia.org/lit
     }
 
     private static String getPrefixedProperty(String property) {
-        return property.replace("http://dbpedia.org/ontology/", "dbo:");
+        property = property.replace("http://dbpedia.org/ontology/", "dbo:");
+        property = property.replace("http://www.w3.org/2001/XMLSchema#", "xsd:");
+        return property.replace("http://xmlns.com/foaf/0.1/", "foaf:");
     }
 }

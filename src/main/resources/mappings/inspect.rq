@@ -1,0 +1,13 @@
+select ?res ?o where {
+ graph <http://es.dbpedia.org/lit/r> {
+  ?stm a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>;
+      <http://dbpedia.org/x-template> "Ficha_de_militar";
+     <http://dbpedia.org/x-attribute> "nombre";
+     <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <http://dbpedia.org/ontology/serviceEndYear>;
+     <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> ?res .
+ }
+ graph <http://es.dbpedia.org/lit> {
+    ?res <http://dbpedia.org/ontology/serviceEndYear> ?o .
+ }
+}
+LIMIT 10
