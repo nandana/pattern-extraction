@@ -1,0 +1,7 @@
+select ?p (count (?o) as ?count) where {
+    ?s a ?class ;
+      ?p ?o .
+}
+GROUP BY ?p
+ORDER BY desc(?count)
+LIMIT ?limit

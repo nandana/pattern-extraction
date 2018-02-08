@@ -61,6 +61,41 @@ public class SparqlUtils {
     }
 
 
+    /**
+     * A utility method to extract results when there is only single result variable with multiple values
+     * @param queryString
+     * @param serviceEndpoint
+     * @param var
+     * @return
+     */
+    public static List<RDFNode> executeQueryForList(String queryString, String serviceEndpoint, String var) {
+
+        //logger.debug("Executing query: {}", queryString);
+
+        List<RDFNode> resultsList = new ArrayList<>();
+
+        Query query = QueryFactory.create(queryString);
+        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(serviceEndpoint, query)) {
+            {
+                ResultSet results = qexec.execSelect();
+
+                // collect all the values
+                for (; results.hasNext(); ) {
+                    QuerySolution soln = results.nextSolution();
+                    if (soln.contains(var)) {
+                        resultsList.add(soln.get(var));
+                    }
+                }
+
+                return resultsList;
+            }
+        }  catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+
     /***
      * A utility method to execute SPARQL query when only single valued
      * @param queryString The SPARQL query string
@@ -115,6 +150,21 @@ public class SparqlUtils {
             throw new IllegalStateException(String.format("The binding for the variable '%s' is not a literal", var));
         }
 
+    }
+
+    public static boolean ask(String queryString, String serviceEndpoint) {
+
+        logger.debug("Executing query: {}", queryString);
+
+        Query query = QueryFactory.create(queryString);
+
+        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(serviceEndpoint, query)) {
+
+            return qexec.execAsk();
+        } catch (Exception e) {
+            System.out.println("Query :" + queryString);
+            throw e;
+        }
     }
 
 }

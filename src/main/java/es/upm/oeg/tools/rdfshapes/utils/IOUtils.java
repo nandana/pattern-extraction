@@ -35,8 +35,8 @@ public class IOUtils {
     public static String readFile(String path, Charset encoding)
             throws IOException {
 
-        //byte[] encoded = Files.readAllBytes(Paths.get(path));
-        byte[] encoded = ByteStreams.toByteArray(IOUtils.class.getClassLoader().getResourceAsStream(path));
+        byte[] encoded = Files.readAllBytes(Paths.get(path));
+        //byte[] encoded = ByteStreams.toByteArray(IOUtils.class.getClassLoader().getResourceAsStream(path));
         return new String(encoded, encoding);
 
     }

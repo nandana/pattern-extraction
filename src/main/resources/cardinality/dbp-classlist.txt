@@ -1,0 +1,12 @@
+http://dbpedia.org/ontology/Award
+http://dbpedia.org/ontology/Person
+http://dbpedia.org/ontology/Place
+http://dbpedia.org/ontology/Organization
+http://dbpedia.org/ontology/MusicalWork
+http://dbpedia.org/ontology/Film
+http://dbpedia.org/ontology/Sport
+http://dbpedia.org/ontology/MeanOfTransportation
+http://dbpedia.org/ontology/Event
+http://dbpedia.org/ontology/Food
+
+

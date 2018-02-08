@@ -1,0 +1,11 @@
+http://www.w3.org/ns/lemon/ontolex#Word
+http://www.w3.org/ns/lemon/ontolex#LexicalSense
+http://www.w3.org/ns/lemon/ontolex#LexicalEntry
+http://www.w3.org/ns/lemon/ontolex#Form
+http://www.w3.org/ns/lemon/ontolex#MultiWordExpression
+http://www.w3.org/ns/lemon/ontolex#Affix
+http://www.w3.org/ns/lemon/ontolex#ConceptSet
+http://www.w3.org/ns/lemon/ontolex#LexicalConcept
+http://www.w3.org/ns/lemon/synsem#OntoMap
+http://www.ontologydesignpatterns.org/cp/owl/semiotics.owl#Expression
+http://www.ontologydesignpatterns.org/cp/owl/semiotics.owl#Meaning

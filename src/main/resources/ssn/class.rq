@@ -1,2 +1,6 @@
-SELECT (count (?s) as ?c) WHERE
-{?s a ?class}
+SELECT (count (distinct ?s) as ?c) WHERE
+{
+  graph ?graph {
+    ?s a ?class
+  }
+}

@@ -1,8 +1,10 @@
 package es.upm.oeg.tools.rdfshapes.mappings;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 import com.hp.hpl.jena.rdf.model.RDFNode;
+import es.upm.oeg.tools.rdfshapes.extractors.QueryBase;
 import es.upm.oeg.tools.rdfshapes.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
 import static es.upm.oeg.tools.rdfshapes.utils.SparqlUtils.executeQueryForList;
@@ -82,6 +82,14 @@ public class MisusedProps {
 
     String rGraph2;
 
+    String infoboxPrefix1;
+
+    String infoboxPrefix2;
+
+    String classGraph1;
+
+    String classGraph2;
+
     BufferedWriter writer;
 
     final Object lock = new Object();
@@ -106,16 +114,24 @@ http://es.dbpedia.org/lit
     //Initialize parameters
     private void init() throws IOException {
 //        graph1 =  "http://en.dbpedia.org";
-//        graph2 = "http://pl.dbpedia.org";
+//        graph2 = "http://nl.dbpedia.org";
 //        rGraph1 = "http://en.dbpedia.org/r";
-//        rGraph2 = "http://pl.dbpedia.org/r";
+//        rGraph2 = "http://nl.dbpedia.org/r";
 
         graph1 =  "http://en.dbpedia.org/lit";
-        graph2 = "http://es.dbpedia.org/lit";
+        graph2 = "http://de.dbpedia.org/lit";
         rGraph1 = "http://en.dbpedia.org/lit/r";
-        rGraph2 = "http://es.dbpedia.org/lit/r";
+        rGraph2 = "http://de.dbpedia.org/lit/r";
 
-        Path path = FileSystems.getDefault().getPath("/home/nandana/data/mappings/en-pl-lit.csv");
+        infoboxPrefix1 = "http://mappings.dbpedia.org/server/mappings/en/";
+        infoboxPrefix2 = "http://mappings.dbpedia.org/server/mappings/de/";
+
+        classGraph1 = "http://en.dbpedia.org/map";
+        classGraph2 = "http://de.dbpedia.org/map";
+
+
+
+        Path path = FileSystems.getDefault().getPath("/home/nandana/data/mappings/en-de-lit.csv");
         writer = Files.newBufferedWriter(path, Charset.defaultCharset(),
                 StandardOpenOption.CREATE);
     }
@@ -154,6 +170,8 @@ http://es.dbpedia.org/lit
         pss.setIri("rGraph1", rGraph1);
         pss.setIri("rGraph2", rGraph2);
         String q1 = pss.toString();
+
+        System.out.println(q1);
 
         logger.debug("Query 1:\n{}", q1);
 
@@ -338,6 +356,7 @@ http://es.dbpedia.org/lit
             propPair.setM5b(count);
         }
 
+
         synchronized (lock) {
             try {
                 writer.write(propPair.getTemplateA()
@@ -345,10 +364,12 @@ http://es.dbpedia.org/lit
                         + ", " + propPair.getTemplateB()
                         + ", " + propPair.getAttributeB()
                         + ", " + getPrefixedProperty(propPair.getPropA())
-                        + ", " + getPrefixedProperty(dbo.getDomain(propPair.getPropA()))
-                        + ", " + getPrefixedProperty(dbo.getRange(propPair.getPropA()))
                         + ", " + getPrefixedProperty(propPair.getPropB())
+                        + ", " + getClass(classGraph1, infoboxPrefix1 + propPair.getTemplateA())
+                        + ", " + getClass(classGraph2, infoboxPrefix2 + propPair.getTemplateB())
+                        + ", " + getPrefixedProperty(dbo.getDomain(propPair.getPropA()))
                         + ", " + getPrefixedProperty(dbo.getDomain(propPair.getPropB()))
+                        + ", " + getPrefixedProperty(dbo.getRange(propPair.getPropA()))
                         + ", " + getPrefixedProperty(dbo.getRange(propPair.getPropB()))
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM1()) / propPair.getM4())
                         + ", " + DECIMAL_FORMAT.format(((double) propPair.getM2()) / propPair.getM4())
@@ -373,6 +394,65 @@ http://es.dbpedia.org/lit
     private static String getPrefixedProperty(String property) {
         property = property.replace("http://dbpedia.org/ontology/", "dbo:");
         property = property.replace("http://www.w3.org/2001/XMLSchema#", "xsd:");
+        property = property.replace("http://www.w3.org/2002/07/owl#", "owl:");
         return property.replace("http://xmlns.com/foaf/0.1/", "foaf:");
+    }
+
+    private static String getClass(String graph, String infobox) {
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("PREFIX rr: <http://www.w3.org/ns/r2rml#> ");
+        sb.append("select ?class where { ");
+        sb.append("  graph <" + graph +"> { ");
+        sb.append("    <" + infobox + "> a rr:TriplesMap ; ");
+        sb.append("    rr:subjectMap ?subjectMap . ");
+        sb.append("    ?subjectMap rr:class ?class . } } ");
+
+        String query = sb.toString();
+
+        final List<RDFNode> classList = QueryBase.executeQueryForList(query, SPARQL_ENDPOINT, "class");
+
+        Set<String> classes = new HashSet<>();
+        for (RDFNode clazz : classList) {
+            if(clazz.isURIResource()) {
+                classes.add(clazz.asResource().getURI());
+            }
+        }
+
+        if (classes.size() > 0) {
+            return Joiner.on(",").join(classes);
+        } else {
+            return "";
+        }
+    }
+
+    private static String subClass(String classA, String classB) {
+
+        if (classA == null || classB == null) {
+            return "n/a";
+        } else if (classA.equals(classA)) {
+            return "same";
+        } else if (DBO.isSubClass(classA, classB)) {
+            return "A -> B";
+        } else if (DBO.isSubClass(classB, classA)) {
+            return "B -> A";
+        } else {
+            return "none";
+        }
+    }
+
+    private static String subProperty(String propA, String propB) {
+
+        if (propA == null || propB == null) {
+            return "n/a";
+        } else if (propA.equals(propA)) {
+            return "same";
+        } else if (DBO.isSubProperty(propA, propB)) {
+            return "A -> B";
+        } else if (DBO.isSubProperty(propB, propA)) {
+            return "B -> A";
+        } else {
+            return "none";
+        }
     }
 }

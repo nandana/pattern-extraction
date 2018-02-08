@@ -1,0 +1,9 @@
+select ?card (count (?s) as ?count ) where {
+
+select ?s (count (?o) as ?card) where {
+ ?s a ?class ;
+   ?p ?o
+} group by ?s
+
+} group by ?card
+order by desc(?count)

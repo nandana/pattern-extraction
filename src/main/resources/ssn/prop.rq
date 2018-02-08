@@ -1,2 +1,6 @@
 SELECT (count (?s) as ?c) WHERE
-{?s ?p ?o}
+{
+    graph ?graph {
+        ?s ?p ?o
+    }
+}

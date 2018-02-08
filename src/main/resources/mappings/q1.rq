@@ -21,4 +21,4 @@ where {
   FILTER (?p1 != ?p2)
 } group by ?p1 ?p2 ?t1 ?t2 ?a1 ?a2
 order by desc(?count)
-LIMIT 100
+LIMIT 5000

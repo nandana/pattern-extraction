@@ -56,9 +56,11 @@ public class PropertyInfoExtractor {
     private static final String QUERY6_PATH = "src/main/resources/query/isTypeOf.rq";
     private static final String QUERY7_PATH = "src/main/resources/query/propertyList.rq";
     private static final String QUERY8_PATH = "src/main/resources/query/propertyDistinctSubjectCount.rq";
+    private static final String QUERY9_PATH = "src/main/resources/query/resourcePropertyList.rq";
 
     private static final String DOMAIN_CLASS_VAR = "domainClass";
     public static final String COUNT_VAR = "count";
+    public static final String SUBJECT_VAR = "count";
     public static final String CLASS_VAR = "class";
     public static final String OBJECT_VAR = "object";
     public static final String PROPERTY_VAR = "property";
@@ -71,6 +73,7 @@ public class PropertyInfoExtractor {
     private static String propertyObjectsQueryString;
     private static String isTypeOfQueryString;
     private static String propertyDistinctSubjectCountQueryString;
+    private static String resourcePropertyListQueryString;
 
 
     static {
@@ -83,6 +86,7 @@ public class PropertyInfoExtractor {
             propertyObjectsQueryString = readFile(QUERY4_PATH, Charset.defaultCharset());
             isTypeOfQueryString = readFile(QUERY6_PATH, Charset.defaultCharset());
             propertyDistinctSubjectCountQueryString = readFile(QUERY8_PATH, Charset.defaultCharset());
+            resourcePropertyListQueryString = readFile(QUERY9_PATH, Charset.defaultCharset());
         } catch (IOException ioe) {
             throw new IllegalStateException("Error loading the query :" + QUERY_PATH);
         }
@@ -97,6 +101,31 @@ public class PropertyInfoExtractor {
 
         return executeQueryForLong(propertyDistinctSubjectCountQuery, sparqlEndpoint, COUNT_VAR);
 
+    }
+
+
+    public static ArrayList<String> extractProperties(String resource, String sparqlEndpoint) {
+
+        ArrayList<String> properties = new ArrayList<>();
+
+        ParameterizedSparqlString pss = new ParameterizedSparqlString();
+        pss.setCommandText(resourcePropertyListQueryString);
+        pss.setIri(SUBJECT_VAR, resource);
+        String resourcePropertyListQuery = pss.toString();
+
+        List<Map<String, RDFNode>> resultsMap = executeQueryForList(resourcePropertyListQuery, sparqlEndpoint,
+                Sets.newHashSet(PROPERTY_VAR));
+
+        for (Map<String, RDFNode> map : resultsMap) {
+            RDFNode propertyNode = map.get(PROPERTY_VAR);
+
+            if (propertyNode != null && propertyNode.isURIResource()) {
+                String property = propertyNode.asResource().getURI();
+                properties.add(property);
+            }
+        }
+
+        return properties;
     }
 
 

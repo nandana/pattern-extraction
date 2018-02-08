@@ -1,0 +1,8 @@
+PREFIX rr: <http://www.w3.org/ns/r2rml#>
+select ?class where {
+   graph <http://en.dbpedia.org/map> {
+    <http://mappings.dbpedia.org/server/mappings/en/Infobox_football_club_season> a rr:TriplesMap ;
+    rr:subjectMap ?subjectMap .
+    ?subjectMap rr:class ?class .
+   }
+}
